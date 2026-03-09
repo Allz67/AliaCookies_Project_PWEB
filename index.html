@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alia Cookies</title>
+</head>
+<body bgcolor="#FFF5E1" text="#5D1C1C">
+
+    <header>
+        <table width="100%" border="0" cellpadding="10">
+            <tr>
+                <td width="100">
+                    <img src="aliacookies.png" alt="Logo Alia Cookies" width="100">
+                </td>
+                <td>
+                    <h1>Alia Cookies Management System</h1>
+                    <p><i>"Tasty in Every Bite"</i></p>
+                </td>
+            </tr>
+        </table>
+    </header>
+
+    <hr>
+
+    <nav>
+        <table width="100%" border="0">
+            <tr>
+                <td align="center">
+                    <a href="#dashboard"><b>DASHBOARD</b></a> | 
+                    <a href="#input-barang"><b>INPUT STOK</b></a> | 
+                    <a href="#daftar-stok"><b>DAFTAR COOKIES</b></a> | 
+                    <a href="#laporan"><b>LAPORAN</b></a>
+                </td>
+            </tr>
+        </table>
+    </nav>
+
+    <hr>
+
+    <table width="100%" border="0" cellpadding="20">
+        <tr valign="top">
+            <td width="70%">
+                
+                <section id="input-barang">
+                    <h2>Input Barang Masuk</h2>
+                    <form action="#" method="post">
+                        <table border="0" cellpadding="5">
+                            <tr>
+                                <td><label for="kode">Kode Barang</label></td>
+                                <td>: <input type="text" id="kode" name="kode" required placeholder="Contoh: AC-001"></td>
+                            </tr>
+                            <tr>
+                                <td><label for="nama">Nama Cookies</label></td>
+                                <td>: <input type="text" id="nama" name="nama" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="kategori">Kategori</label></td>
+                                <td>: 
+                                    <select id="kategori" name="kategori">
+                                        <option value="kue-kering">Kue Kering</option>
+                                        <option value="hampers">Hampers</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><label for="harga">Harga Satuan (Rp)</label></td>
+                                <td>: <input type="number" id="harga" name="harga"></td>
+                            </tr>
+                            <tr>
+                                <td><label for="foto">Foto Produk</label></td>
+                                <td>: <input type="file" id="foto" name="foto"></td>
+                            </tr>
+                            <tr>
+                                <td><label for="keterangan">Keterangan</label></td>
+                                <td>: <textarea id="keterangan" name="keterangan" rows="3" cols="30"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <input type="submit" value="Simpan Data"> 
+                                    <input type="reset" value="Batal">
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </section>
+
+                <br><br>
+
+                <section id="daftar-stok">
+                    <h2>Daftar Alia Cookies Terbaru</h2>
+                    <table border="1" width="100%" cellpadding="10" cellspacing="0">
+                        <tr bgcolor="#D4A373"> 
+                            <th>No</th>
+                            <th>Kode</th>
+                            <th>Nama Barang</th>
+                            <th>Kategori</th>
+                            <th>Harga</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>AC-001</td>
+                            <td>Nastar Keju</td>
+                            <td>Kue Kering</td>
+                            <td>Rp 85.000</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>AC-002</td>
+                            <td>Putri Salju</td>
+                            <td>Kue Kering</td>
+                            <td>Rp 75.000</td>
+                        </tr>
+                    </table>
+                </section>
+            </td>
+
+            <td width="30%" bgcolor="#FAE1DD">
+                <aside>
+                    <h3>Statistik Alia Cookies</h3>
+                    <ul>
+                        <li><b>Total Stok:</b> 87 Toples</li>
+                        <li><b>Produk Terlaris:</b> Kastangel</li>
+                        <li><b>Penjualan Bulan Ini:</b> 120 Toples</li>
+                        <li><b>Penjualan Bulan Terbanyak:</b> Bulan Ramadhan</li>
+                    </ul>
+                    <hr>
+                    <h3>Info Sistem</h3>
+                    <p>Admin: <b>Alia</b></p>
+                    <p>Lokasi: <b>Jember, Jawa Timur</b></p>
+                    <p>Waktu: <b>09 Maret 2026</b></p>
+                </aside>
+            </td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <footer>
+        <p align="center">
+            &copy; 2026 <b>Alia Cookies</b> - Premium Homemade Cookies<br>
+            Jl. Letjend Suprapto IV Garuda 12, Jember | Email: aliacookies@gmail.com
+        </p>
+    </footer>
+
+</body>
+</html>
