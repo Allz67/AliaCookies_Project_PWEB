@@ -3,166 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alia Cookies</title>
+    <title>Alia Cookies | Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body bgcolor="#FFF5E1" text="#5D1C1C">
-    <header>
-        <table width="100%" border="0" cellpadding="10">
-            <tr>
-                <td width="100">
-                    <img src="aliacookies.png" alt="Logo Alia Cookies" width="100">
-                </td>
-                <td>
-                    <h1>Alia Cookies Management System</h1>
-                    <p><i>"Tasty in Every Bite"</i></p>
-                </td>
-            </tr>
-        </table>
-    </header>
+<body>
 
-    <hr>
-
-    <nav>
-        <table width="100%" border="0">
-            <tr>
-                <td align="center">
-                    <a href="#dashboard"><b>DASHBOARD</b></a> | 
-                    <a href="#input-barang"><b>INPUT STOK</b></a> | 
-                    <a href="#daftar-stok"><b>DAFTAR COOKIES</b></a> | 
-                    <a href="#laporan"><b>LAPORAN</b></a>
-                </td>
-            </tr>
-        </table>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="aliacookies.png" alt="Logo"> <span>ALIA COOKIES ADMIN</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">Dashboard</a></li>
+            <li><a href="produk.html">Kelola Produk</a></li>
+            <li><a href="laporan.html">Laporan Penjualan</a></li>
+            <li><a href="pesanan.html">Kelola Pesanan</a></li>
+        </ul>
     </nav>
 
-    <hr>
+    <header class="hero-dashboard">
+        <div class="header-content">
+            <h1>Selamat Datang, Alia!</h1>
+            <p>Kelola stok dan pesanan hari ini dengan mudah.</p>
+        </div>
+    </header>
 
-    <table width="100%" border="0" cellpadding="20">
-        <tr valign="top">
-            <td width="70%">
-                
-                <section id="input-barang">
-                    <h2>Input Barang Masuk</h2>
-                    <form action="#" method="post">
-                        <table border="0" cellpadding="5">
-                            <tr>
-                                <td><label for="kode">Kode Barang</label></td>
-                                <td>: <input type="text" id="kode" name="kode" required placeholder="Contoh: AC-001"></td>
-                            </tr>
-                            <tr>
-                                <td><label for="nama">Nama Cookies</label></td>
-                                <td>: <input type="text" id="nama" name="nama" required></td>
-                            </tr>
-                            <tr>
-                                <td><label for="kategori">Kategori</label></td>
-                                <td>: 
-                                    <select id="kategori" name="kategori">
-                                        <option value="kue-kering">Kue Kering</option>
-                                        <option value="hampers">Hampers</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><label for="harga">Harga Satuan (Rp)</label></td>
-                                <td>: <input type="number" id="harga" name="harga"></td>
-                            </tr>
-                            <tr>
-                                <td><label for="foto">Foto Produk</label></td>
-                                <td>: <input type="file" id="foto" name="foto"></td>
-                            </tr>
-                            <tr>
-                                <td><label for="keterangan">Keterangan</label></td>
-                                <td>: <textarea id="keterangan" name="keterangan" rows="3" cols="30"></textarea></td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td>
-                                    <input type="submit" value="Simpan Data"> 
-                                    <input type="reset" value="Batal">
-                                </td>
-                            </tr>
-                        </table>
-                    </form>
-                </section>
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="card stat-card">
+                <h3>Ringkasan Stok</h3>
+                <p>Total Cookies: <b>1.250 pcs</b></p>
+                <p>Hampers Ready: <b>45 Set</b></p>
+                <hr>
+                <div class="search-admin">
+                    <label for="search">Cari ID/Nama:</label>
+                    <input type="text" id="search" placeholder="Contoh: AC-001">
+                    <button class="btn-primary">Cari Produk</button>
+                </div>
+            </div>
+        </aside>
 
-                <br><br>
+        <main class="content-area">
+            <div class="category-grid">
+                <a href="cookies.html" class="cat-card">
+                    <h4>Kue Kering</h4>
+                </a>
+    
+                <a href="hampers.html" class="cat-card">
+                    <h4>Hampers</h4>
+                </a>
+    
+                <a href="laporan.html" class="cat-card">
+                    <h4>Laporan</h4>
+                </a>
+            </div>
 
-                <section id="daftar-stok">
-                    <h2>Daftar Alia Cookies Terbaru</h2>
-                    <table border="1" width="100%" cellpadding="10" cellspacing="0">
-                        <tr bgcolor="#D4A373"> 
-                            <th>No</th>
-                            <th>Kode</th>
-                            <th>Nama Barang</th>
-                            <th>Kategori</th>
-                            <th>Harga</th>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>AC-001</td>
-                            <td>Nastar Keju</td>
-                            <td>Kue Kering</td>
-                            <td>Rp 85.000</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>AC-002</td>
-                            <td>Putri Salju</td>
-                            <td>Kue Kering</td>
-                            <td>Rp 75.000</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>AC-003</td>
-                            <td>Kastengel Keju</td>
-                            <td>Kue Kering</td>
-                            <td>Rp 95.000</td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>AC-004</td>
-                            <td>Cookies Cokelat</td>
-                            <td>Kue Kering</td>
-                            <td>Rp 65.000</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>AC-005</td>
-                            <td>Sagu Keju</td>
-                            <td>Kue Kering</td>
-                            <td>Rp 70.000</td>
-                        </tr>
+            <section class="inventory-section card">
+                <h2>Daftar Cookies</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product ID</th>
+                                <th>Nama Cookies</th>
+                                <th>Kategori</th>
+                                <th>Jumlah Stok (pcs)</th>
+                                <th>Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>AC-001</td>
+                                <td>Nastar Wisman</td>
+                                <td>Kue Kering</td>
+                                <td><strong>150</strong></td>
+                                <td>Rp 120.000</td>
+                            </tr>
+                            <tr>
+                                <td>AC-002</td>
+                                <td>Kastengel Keju</td>
+                                <td>Kue Kering</td>
+                                <td><strong>85</strong></td>
+                                <td>Rp 95.000</td>
+                            </tr>
+                            <tr>
+                                <td>AC-H01</td>
+                                <td>Hampers Lebaran A</td>
+                                <td>Hampers</td>
+                                <td><strong>20</strong></td>
+                                <td>Rp 350.000</td>
+                            </tr>
+                        </tbody>
                     </table>
-                </section>
-            </td>
+                </div>
+            </section>
+        </main>
+    </div>
 
-            <td width="30%" bgcolor="#FAE1DD">
-                <aside>
-                    <h3>Statistik Alia Cookies</h3>
-                    <ul>
-                        <li><b>Total Stok:</b> 87 Toples</li>
-                        <li><b>Produk Terlaris:</b> Kastangel</li>
-                        <li><b>Penjualan Bulan Ini:</b> 120 Toples</li>
-                        <li><b>Penjualan Bulan Terbanyak:</b> Bulan Ramadhan</li>
-                    </ul>
-                    <hr>
-                    <h3>Info Sistem</h3>
-                    <p>Admin: <b>Alia</b></p>
-                    <p>Lokasi: <b>Jember, Jawa Timur</b></p>
-                    <p>Waktu: <b>09 Maret 2026</b></p>
-                </aside>
-            </td>
-        </tr>
-    </table>
-
-    <hr>
-
-    <footer>
-        <p align="center">
-            &copy; 2026 <b>Alia Cookies</b> - Premium Homemade Cookies<br>
-            Jl. Letjend Suprapto IV Garuda 12, Jember | Email: aliacookies@gmail.com
-        </p>
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="col">
+                <h4>Alia Cookies System</h4>
+                <p>Jember, Jawa Timur</p>
+            </div>
+            <div class="col">
+                <h4>Status Server</h4>
+                <p>Online - 29 Maret 2026</p>
+            </div>
+            <div class="col">
+                <h4>Follow kami di Instagram</h4>
+                <p>@aliacookies.jbr</p>
+            </div>
+        </div>
     </footer>
-
 </body>
 </html>
