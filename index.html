@@ -35,9 +35,20 @@
                 <p>Hampers Ready: <b>45 Set</b></p>
                 <hr>
                 <div class="search-admin">
-                    <label for="search">Cari ID/Nama:</label>
+                    <label for="search">Cari Produk:</label>
                     <input type="text" id="search" placeholder="Contoh: AC-001">
-                    <button class="btn-primary">Cari Produk</button>
+                    
+                    <div class="filter-options" style="margin: 15px 0;">
+                        <label class="filter-item">
+                            <input type="checkbox" name="type" value="cookies" checked>
+                            <span class="custom-checkbox"></span> Kue Kering
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" name="type" value="hampers">
+                            <span class="custom-checkbox"></span> Hampers
+                        </label>
+                    </div>
+                    <button class="btn-primary">Cari Sekarang</button>
                 </div>
             </div>
         </aside>

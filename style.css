@@ -229,6 +229,62 @@ tbody tr:hover { background-color: #fcecf3; }
     gap: 30px; 
 }
 
+/* Styling Checkbox di Sidebar (Poin 6) */
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Sembunyikan Checkbox Asli */
+.filter-item input[type="checkbox"] {
+    display: none;
+}
+
+/* Buat Kotak Checkbox Custom */
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--pink-soft);
+    border-radius: 4px; /* Kotak, bukan bulat */
+    background: white;
+    display: inline-block;
+    position: relative;
+    transition: var(--transition-fast);
+}
+
+/* Efek saat dicentang */
+.filter-item input:checked ~ .custom-checkbox {
+    background: var(--pink-dark);
+    border-color: var(--pink-dark);
+}
+
+/* Tanda Centang (Checkmark) */
+.custom-checkbox:after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.filter-item input:checked ~ .custom-checkbox:after {
+    display: block;
+}
+
 /* 8. GRAFIK LAPORAN */
 .chart-container {
     display: flex;
