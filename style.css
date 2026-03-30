@@ -1,4 +1,4 @@
-/* 1. VARIABEL & RESET DASAR */
+/* VARIABEL & RESET DASAR */
 :root {
     --pink-soft: #F9D5E5;
     --pink-hover: #fcd5e8;
@@ -26,7 +26,7 @@ body {
     padding-top: 80px; 
 }
 
-/* 2. NAVBAR & NAVIGASI */
+/* NAVBAR & NAVIGASI */
 .navbar {
     position: fixed; 
     top: 0; width: 100%; height: 70px;
@@ -64,7 +64,7 @@ body {
     border-bottom: 2px solid var(--pink-dark); 
 }
 
-/* 3. LAYOUT UTAMA & HERO */
+/* LAYOUT UTAMA & HERO */
 .container { padding: 0 5%; }
 
 .hero-dashboard {
@@ -85,7 +85,7 @@ body {
     .main-container { grid-template-columns: 1fr 3.5fr; } /* Sidebar & Content */
 }
 
-/* 4. KARTU & GRID (INDEX/DASHBOARD) */
+/* KARTU & GRID (INDEX/DASHBOARD) */
 .category-grid {
     display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -103,7 +103,7 @@ body {
 
 .cat-card:hover { transform: translateY(-5px); background: var(--pink-soft); }
 
-/* 5. LIST PRODUK (COOKIES/HAMPERS) */
+/* LIST PRODUK (COOKIES/HAMPERS) */
 .crumbs-grid {
     display: grid;
     grid-template-columns: 1fr; 
@@ -176,7 +176,7 @@ body {
 
 .cookie-img { height: 110px; width: auto; object-fit: contain; }
 
-/* 6. FORM & TABEL */
+/* FORM & TABEL */
 .card { 
     background: var(--white); 
     padding: 25px; 
@@ -206,7 +206,7 @@ td { padding: 15px; border-bottom: 1px solid #eee; }
 tbody tr:nth-child(even) { background-color: #fdf5f8; }
 tbody tr:hover { background-color: #fcecf3; }
 
-/* 7. BUTTONS & FOOTER */
+/* BUTTONS & FOOTER */
 .btn-primary, .btn-add {
     background: var(--pink-dark); color: white; border: none;
     padding: 12px 25px; border-radius: 10px; cursor: pointer;
@@ -229,7 +229,7 @@ tbody tr:hover { background-color: #fcecf3; }
     gap: 30px; 
 }
 
-/* Styling Checkbox di Sidebar (Poin 6) */
+/* Styling Checkbox di Sidebar */
 .filter-options {
     display: flex;
     flex-direction: column;
@@ -244,30 +244,26 @@ tbody tr:hover { background-color: #fcecf3; }
     font-size: 14px;
 }
 
-/* Sembunyikan Checkbox Asli */
 .filter-item input[type="checkbox"] {
     display: none;
 }
 
-/* Buat Kotak Checkbox Custom */
 .custom-checkbox {
     width: 18px;
     height: 18px;
     border: 2px solid var(--pink-soft);
-    border-radius: 4px; /* Kotak, bukan bulat */
+    border-radius: 4px; 
     background: white;
     display: inline-block;
     position: relative;
     transition: var(--transition-fast);
 }
 
-/* Efek saat dicentang */
 .filter-item input:checked ~ .custom-checkbox {
     background: var(--pink-dark);
     border-color: var(--pink-dark);
 }
 
-/* Tanda Centang (Checkmark) */
 .custom-checkbox:after {
     content: '';
     position: absolute;
@@ -285,7 +281,7 @@ tbody tr:hover { background-color: #fcecf3; }
     display: block;
 }
 
-/* 8. GRAFIK LAPORAN */
+/* GRAFIK LAPORAN */
 .chart-container {
     display: flex;
     align-items: flex-end;
@@ -329,7 +325,7 @@ tbody tr:hover { background-color: #fcecf3; }
     font-weight: 600;
 }
 
-/* 9. Styling Sidebar Filter Item */
+/* Styling Sidebar Filter Item */
 .filter-item {
     display: flex;
     align-items: center;
@@ -382,7 +378,7 @@ tbody tr:hover { background-color: #fcecf3; }
     display: block;
 }
 
-/* 9. PRODUCT */
+/* PRODUCT */
 .product-hub-container {
     display: flex;
     flex-direction: column;
