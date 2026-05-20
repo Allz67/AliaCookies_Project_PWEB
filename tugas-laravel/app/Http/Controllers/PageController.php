@@ -1,19 +1,19 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
     public function profile()
     {
-        $username = session('username', 'Admin');
+        $userNama = Auth::user()->name;
 
         $user = [
-            'nama'          => $username,
-            'role'          => 'Administrator',
-            'email'         => strtolower(str_replace(' ', '', $username)) . '@aliacookies.com',
+            'nama'          => $userNama,
+            'role'          => Auth::user()->role,
+            'email'         => Auth::user()->email,
             'tanggal_login' => date('d F Y, H:i') . ' WIB',
             'bergabung'     => '01 Januari 2025',
             'toko'          => 'Alia Cookies',
@@ -21,6 +21,6 @@ class PageController extends Controller
             'no_hp'         => '+62 856-4856-9562',
         ];
 
-        return view('profile', compact('username', 'user'));
+        return view('profile', ['username' => $userNama,'user' => $user]);
     }
 }

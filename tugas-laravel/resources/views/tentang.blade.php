@@ -193,7 +193,7 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
     const tlItems = document.querySelectorAll('.timeline-item');
     const observer = new IntersectionObserver((entries) => {
@@ -206,4 +206,4 @@
     }, { threshold: 0.15 });
     tlItems.forEach(el => observer.observe(el));
 </script>
-@endsection
+@endpush

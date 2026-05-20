@@ -8,7 +8,7 @@
         <div>
             <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
             <h1 class="page-title">Pengelolaan <span class="highlight">Stok Produk</span></h1>
-            <p class="page-sub">Selamat datang, <strong>{{ $username }}</strong>. Kelola stok produk Alia Cookies dengan mudah.</p>
+            <p class="page-sub">Selamat datang, <strong>{{ auth()->user()->name }}</strong>. Kelola stok produk Alia Cookies dengan mudah.</p>
         </div>
     </div>
 
@@ -61,17 +61,21 @@
 
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Status Stok</h2>
+                <h2 class="card-title">Status Visual Stok</h2>
             </div>
             <div class="stok-bars">
-                @foreach($produk as $p)
+                {{-- Menggunakan $products hasil paginate --}}
+                @foreach($products as $p)
                 <div class="stok-bar-item">
                     <div class="stok-bar-header">
-                        <span class="stok-bar-name">{{ $p['nama'] }}</span>
-                        <span class="stok-bar-val">{{ $p['stok'] }}</span>
+                        <span class="stok-bar-name">{{ $p->nama }}</span>
+                        <span class="stok-bar-val">{{ $p->stok }}</span>
                     </div>
                     <div class="stok-bar-track">
-                        <div class="stok-bar-fill stok-fill-{{ strtolower($p['status']) }}" style="width: {{ min(($p['stok']/50)*100, 100) }}%"></div>
+                        @php
+                            $status = $p->stok > 10 ? 'tersedia' : ($p->stok > 0 ? 'menipis' : 'habis');
+                        @endphp
+                        <div class="stok-bar-fill stok-fill-{{ $status }}" style="width: {{ min(($p->stok/50)*100, 100) }}%"></div>
                     </div>
                 </div>
                 @endforeach
@@ -79,20 +83,34 @@
         </div>
     </div>
 
-    <div class="card table-card">
-        <div class="card-header">
-            <h2 class="card-title">Data Stok Produk</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div></div>
+
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ route('product.trashed') }}" class="btn-admin-cancel" style="padding: 10px 20px; font-size: 0.75rem; min-width: auto; height: auto; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8H3V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2zM5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M10 12h4"></path></svg>
+                LIHAT ARSIP
+            </a>
+
+            <a href="{{ route('product.create') }}" class="btn-admin-save" style="padding: 10px 20px; font-size: 0.75rem; min-width: auto; height: auto; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                TAMBAH PRODUK
+            </a>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
             <div class="table-controls">
                 <div class="search-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="searchProduk" placeholder="Cari produk..." onkeyup="searchTable('produkTable', this.value)">
+                    <input type="text" id="searchProduct" placeholder="Cari produk..." onkeyup="doProductSearch(this.value)">
                 </div>
-                <select onchange="filterTableByStatus('produkTable', 4, this.value)" class="filter-select">
+                <select onchange="filterTableByStatus('produkTable', 2, this.value)" class="filter-select">
                     <option value="">Semua Kategori</option>
                     <option value="Cookies">Cookies</option>
                     <option value="Hampers">Hampers</option>
                 </select>
-                <select onchange="filterTableByStatus('produkTable', 5, this.value)" class="filter-select">
+                <select onchange="filterTableByStatus('produkTable', 6, this.value)" class="filter-select">
                     <option value="">Semua Status</option>
                     <option value="Tersedia">Tersedia</option>
                     <option value="Menipis">Menipis</option>
@@ -100,47 +118,15 @@
                 </select>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="data-table" id="produkTable">
-                <thead>
-                    <tr>
-                        <th>Kode</th>
-                        <th>Nama Produk</th>
-                        <th>Stok</th>
-                        <th>Satuan</th>
-                        <th>Kategori</th>
-                        <th>Status</th>
-                        <th>Harga</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($produk as $p)
-                    <tr>
-                        <td><span class="trx-id">{{ $p['kode'] }}</span></td>
-                        <td>{{ $p['nama'] }}</td>
-                        <td><strong>{{ $p['stok'] }}</strong></td>
-                        <td>{{ $p['satuan'] }}</td>
-                        <td>
-                            <span class="kategori-badge kategori-{{ strtolower($p['kategori']) }}">
-                                {{ $p['kategori'] }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="status-badge status-{{ $p['status'] === 'Tersedia' ? 'selesai' : ($p['status'] === 'Menipis' ? 'proses' : 'batal') }}">
-                                {{ $p['status'] }}
-                            </span>
-                        </td>
-                        <td class="td-money">Rp {{ number_format($p['harga'], 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+
+        <div id="product-table-container">
+            @include('partials.product_table')
         </div>
     </div>
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
     const ctx2 = document.getElementById('stokChart').getContext('2d');
     new Chart(ctx2, {
@@ -169,5 +155,83 @@
             }
         }
     });
+    // 1. Fungsi Live Search AJAX untuk Produk
+    async function doProductSearch(keyword) {
+        const container = document.getElementById('product-table-container');
+        try {
+            // Kunci AJAX: Arahkan URL fetch langsung ke rute /pengelolaan secara tertulis
+            const response = await fetch(`/pengelolaan?keyword=${encodeURIComponent(keyword)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const html = await response.text();
+            container.innerHTML = html;
+        } catch (error) {
+            console.error("Gagal memuat hasil pencarian produk:", error);
+        }
+    }
+
+    // 2. Interseptor Pagination AJAX untuk Produk
+    document.addEventListener('click', async function(e) {
+        const paginationLink = e.target.closest('.pagination a');
+        if (paginationLink) {
+            // Cek apakah link pagination ini berada di dalam container produk
+            const isProductPagination = e.target.closest('#product-table-container');
+
+            if (isProductPagination) {
+                e.preventDefault(); // Cegah halaman reload utuh
+
+                const url = paginationLink.href;
+                const keyword = document.getElementById('searchProduct').value;
+                const container = document.getElementById('product-table-container');
+
+                try {
+                    const targetUrl = new URL(url);
+                    if(keyword) targetUrl.searchParams.set('keyword', keyword);
+
+                    const response = await fetch(targetUrl, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const html = await response.text();
+                    container.innerHTML = html;
+                } catch (error) {
+                    console.error("Gagal memuat halaman pagination produk:", error);
+                }
+            }
+        }
+    });
+
+    function bukaModalDetail(button) {
+        // 1. Ambil semua data dari elemen tombol yang diklik
+        const kode = button.getAttribute('data-kode');
+        const nama = button.getAttribute('data-nama');
+        const kategori = button.getAttribute('data-kategori');
+        const stok = button.getAttribute('data-stok');
+        const satuan = button.getAttribute('data-satuan');
+        const harga = button.getAttribute('data-harga');
+        const status = button.getAttribute('data-status');
+        const foto = button.getAttribute('data-foto');
+
+        // 2. Suntikkan data tersebut ke ID elemen modal aslimu
+        // (Silakan sesuaikan ID elemen modal di bawah ini dengan ID modal yang kamu buat di show.blade.php ya!)
+        if(document.getElementById('modalKode')) document.getElementById('modalKode').innerText = kode;
+        if(document.getElementById('modalNama')) document.getElementById('modalNama').innerText = nama;
+        if(document.getElementById('modalKategori')) document.getElementById('modalKategori').innerText = kategori;
+        if(document.getElementById('modalStok')) document.getElementById('modalStok').innerText = stok + ' ' + satuan;
+        if(document.getElementById('modalHarga')) document.getElementById('modalHarga').innerText = 'Rp ' + harga;
+        if(document.getElementById('modalStatus')) document.getElementById('modalStatus').innerText = status;
+
+        const elementsFoto = document.getElementById('modalFoto');
+        if(elementsFoto) elementsFoto.src = foto;
+
+        // 3. Panggil fungsi atau tampilkan modal bawaan aplikasimu
+        // Contoh jika menggunakan fungsi showDetail bawaanmu:
+        if (typeof showDetail === "function") {
+            showDetail(kode, nama, kategori, stok, satuan, harga, status, foto);
+        } else {
+            // Jika modalmu menggunakan class active/show biasa untuk muncul:
+            const modalElement = document.getElementById('detailModal'); // sesuaikan ID modalmu
+            if(modalElement) modalElement.classList.add('show');
+        }
+    }
 </script>
-@endsection
+@endpush

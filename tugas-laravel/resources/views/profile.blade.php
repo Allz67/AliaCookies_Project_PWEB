@@ -7,7 +7,7 @@
     <div class="page-header">
         <div>
             <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
-            <h1 class="page-title">Profil <span class="highlight">{{ $username }}</span></h1>
+            <h1 class="page-title">Halo, <span class="highlight">{{ auth()->user()->name }}</span>!</h1>
             <p class="page-sub">Informasi akun dan detail administrator Alia Cookies.</p>
         </div>
     </div>

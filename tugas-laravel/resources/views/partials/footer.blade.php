@@ -17,7 +17,9 @@
                 <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 <li><a href="{{ route('pengelolaan') }}">Pengelolaan</a></li>
                 <li><a href="{{ route('profile') }}">Profile</a></li>
-                <li><a href="{{ route('login') }}">Logout</a></li>
+                <li><a href="{{ route('tentang') }}">Tentang Kami</a></li>
+                <li><a href="{{ route('kontak') }}">Kontak</a></li>
+                <li><a href="{{ route('logout') }}">Logout</a></li>
             </ul>
         </div>
 

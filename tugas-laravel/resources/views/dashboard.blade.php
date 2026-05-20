@@ -4,14 +4,32 @@
 
 @section('content')
 <div class="page-wrapper">
+    @if (session('error'))
+        <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb; display: flex; align-items: center;">
+            <svg width="20" height="20" fill="currentColor" style="margin-right: 10px;" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div class="page-header">
         <div>
             <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
-            <h1 class="page-title">Halo, <span class="highlight">{{ $username }}</span>!</h1>
-            <h1>Dashboard Alia Cookies</h1>
+            <h1 class="page-title">Halo, <span class="highlight">{{ auth()->user()->name }}</span>!</h1>
             <p class="page-sub">Berikut ringkasan penjualan toko Alia Cookies hari ini.</p>
-        </div>
+
+            <div id="weather-section" style="margin-top: 15px; display: inline-flex; align-items: center; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 30px; font-size: 0.8rem; color: white; border: 1px solid rgba(255,255,255,0.25);">
+                <div id="loading-cuaca">Memuat info logistik Jember...</div>
+                    <div id="konten-cuaca" style="display: none; align-items: center; gap: 8px;">
+                        <span id="weather-icon">📍</span>
+                        <strong>Jember:</strong> <span id="suhu-saat-ini">--</span>°C,
+                        <span id="deskripsi-cuaca">--</span>
+                        <span style="margin: 0 4px; opacity: 0.5;">|</span>
+                        <span id="rekomendasi-toko" style="font-style: italic; opacity: 0.9;"></span>
+                    </div>
+                </div>
+            </div>
         <div class="page-header-img">
             <img src="{{ asset('images/cookies.png') }}" alt="Cookies" onerror="this.style.display='none'">
         </div>
@@ -57,6 +75,26 @@
                 <span class="stat-value">{{ $stats['pelanggan'] }}</span>
                 <span class="stat-change up">↑ 3 pelanggan baru</span>
             </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="stat-card stat-mocha bg-white dark:bg-[#fff8f2] border border-transparent dark:border-[#e6ccb2] transition-colors duration-200" style="padding: 1.25rem;">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Kunjungan</span>
+                    <span class="stat-value">{{ $visitCount }}</span>
+                    <span class="stat-change up" style="color: #4a7c51;">↑ Pkl {{ \Carbon\Carbon::parse($lastVisit)->format('H:i') }}</span>
+                </div>
+            </div>
+
+            <form action="{{ route('kunjungan.reset') }}" method="POST" style="margin: 0;">
+                @csrf
+                <button type="submit" style="width: 100%; font-size: 11px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--mocha); color: var(--mocha); background: transparent; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                    <strong>↺ Reset Data</strong>
+                    <span style="opacity: 0.8;">Awal: {{ \Carbon\Carbon::parse($firstVisit)->translatedFormat('d M') }}</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -135,42 +173,58 @@
                 </select>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="data-table" id="trxTable">
-                <thead>
-                    <tr>
-                        <th>ID Transaksi</th>
-                        <th>Pelanggan</th>
-                        <th>Produk</th>
-                        <th>Status</th>
-                        <th>Total</th>
-                        <th>Tanggal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($transactions as $trx)
-                    <tr>
-                        <td><span class="trx-id">{{ $trx['id'] }}</span></td>
-                        <td>{{ $trx['customer'] }}</td>
-                        <td>{{ $trx['produk'] }} <span class="qty-badge">x{{ $trx['qty'] }}</span></td>
-                        <td>
-                            <span class="status-badge status-{{ strtolower($trx['status']) }}">
-                                {{ $trx['status'] }}
-                            </span>
-                        </td>
-                        <td class="td-money">Rp {{ number_format($trx['total'], 0, ',', '.') }}</td>
-                        <td class="td-date">{{ $trx['tanggal'] }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div id="table-container">
+            @include('partials.transaction_table')
         </div>
     </div>
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
+    async function ambilDataCuaca() {
+    const loading = document.getElementById('loading-cuaca');
+    const konten = document.getElementById('konten-cuaca');
+
+    try {
+        // Ambil data API publik untuk Jember dengan format JSON (j1)
+        const response = await fetch('https://wttr.in/Jember?format=j1');
+        if (!response.ok) throw new Error('Gagal memuat API');
+
+        const data = await response.json();
+
+        // Ambil data suhu dan deskripsi cuaca
+        const suhu = data.current_condition[0].temp_C;
+        const deskripsi = data.current_condition[0].weatherDesc[0].value;
+
+        // Tulis ke elemen HTML
+        document.getElementById('suhu-saat-ini').innerText = suhu;
+        document.getElementById('deskripsi-cuaca').innerText = deskripsi;
+
+        // Logika bisnis kemasan kue Alia Cookies berdasarkan cuaca
+        const rekomendasi = document.getElementById('rekomendasi-toko');
+        const descLower = deskripsi.toLowerCase();
+
+        if (descLower.includes('rain') || descLower.includes('shower') || descLower.includes('drizzle')) {
+            rekomendasi.innerText = "Packing ekstra plastik untuk pesanan, hari ini hujan.";
+            if(document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = "🌧️";
+        } else {
+            rekomendasi.innerText = "Aman untuk pengiriman pesanan.";
+            if(document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = "☀️";
+        }
+
+        // Hilangkan loading indicator dan munculkan data asli
+        loading.style.display = 'none';
+       konten.style.display = 'flex';
+
+    } catch (error) {
+        console.error(error);
+        loading.innerText = "❌ Gagal memuat info cuaca";
+    }
+    }
+
+// Jalankan fungsi otomatis saat halaman selesai dimuat
+    document.addEventListener('DOMContentLoaded', ambilDataCuaca);
     const grafikLabels = @json($grafik['labels']);
     const grafikData   = @json($grafik['data']);
 
@@ -224,5 +278,43 @@
         }
         salesChart.update();
     }
+    // Fungsi Utama Live Search AJAX
+    async function doLiveSearch(keyword) {
+        const container = document.getElementById('table-container');
+        try {
+            const response = await fetch(`/dashboard?keyword=${encodeURIComponent(keyword)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const html = await response.text();
+            container.innerHTML = html;
+        } catch (error) {
+            console.error("Gagal memuat hasil pencarian Live Search:", error);
+        }
+    }
+
+    // Interseptor Tombol Pagination Laravel agar Tidak Reload Halaman
+    document.addEventListener('click', async function(e) {
+        const paginationLink = e.target.closest('.pagination a');
+        if (paginationLink) {
+            e.preventDefault();
+
+            const url = paginationLink.href;
+            const keyword = document.getElementById('searchTrx').value;
+            const container = document.getElementById('table-container');
+
+            try {
+                const targetUrl = new URL(url);
+                if(keyword) targetUrl.searchParams.set('keyword', keyword);
+
+                const response = await fetch(targetUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const html = await response.text();
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Gagal memuat halaman pagination AJAX:", error);
+            }
+        }
+    });
 </script>
-@endsection
+@endpush
