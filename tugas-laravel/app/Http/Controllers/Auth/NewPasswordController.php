@@ -15,10 +15,6 @@ use Illuminate\View\View;
 
 class NewPasswordController extends Controller
 {
-    /**
-     * Tampilkan form reset password.
-     * Token & email dikirim dari link di email.
-     */
     public function create(Request $request): View
     {
         return view('auth.reset-password', [
@@ -56,7 +52,7 @@ class NewPasswordController extends Controller
 
         if ($status === Password::PASSWORD_RESET) {
             return redirect()->route('login')
-                ->with('success', 'Password berhasil diubah! Silakan login dengan password baru kamu. ✅');
+                ->with('success', 'Password berhasil diubah! Silakan login dengan password baru kamu.');
         }
 
         return back()

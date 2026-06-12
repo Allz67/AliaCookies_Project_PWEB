@@ -16,7 +16,7 @@ class HomeController extends Controller
 
         // 1. JIKA ADA REQUEST PENCARIAN DARI LIVE SEARCH
         if ($request->ajax() || $request->has('keyword')) {
-            $products = Product::where('is_active', 1)
+            $products = Product::query()->where('is_active', 1)
                 ->whereNull('deleted_at')
                 ->where(function($q) use ($keyword) {
                     $q->where('nama', 'LIKE', "%{$keyword}%")
@@ -55,8 +55,8 @@ class HomeController extends Controller
         }
 
         // 2. TAMPILAN DEFAULT BERANDA (Jika tidak sedang mencari)
-        $cookies = Product::where('is_active', 1)->where('kategori', 'Cookies')->whereNull('deleted_at')->orderBy('nama')->get();
-        $hampers = Product::where('is_active', 1)->where('kategori', 'Hampers')->whereNull('deleted_at')->orderBy('nama')->get();
+        $cookies = Product::query()->where('is_active', 1)->where('kategori', 'Cookies')->where('stok', '>', 0)->whereNull('deleted_at')->orderBy('nama')->get();
+        $hampers = Product::query()->where('is_active', 1)->where('kategori', 'Hampers')->where('stok', '>', 0)->whereNull('deleted_at')->orderBy('nama')->get();
 
         return view('home', compact('cookies', 'hampers'));
     }
@@ -66,7 +66,7 @@ class HomeController extends Controller
      */
     public function show($id)
     {
-        $produk = Product::where('is_active', 1)
+        $produk = Product::query()->where('is_active', 1)
                          ->whereNull('deleted_at')
                          ->findOrFail($id);
 

@@ -26,13 +26,13 @@ class PageController extends Controller
 
     public function tentang()
     {
-        $ceritaDb = Setting::where('key', 'tentang_cerita')->first();
+        $ceritaDb = Setting::query()->where('key', 'tentang_cerita')->first();
         $cerita = $ceritaDb ? $ceritaDb->value : 'Alia Cookies bermula dari kecintaan terhadap seni membuat kue...';
 
-        $milestonesDb = Setting::where('key', 'tentang_milestones')->first();
+        $milestonesDb = Setting::query()->where('key', 'tentang_milestones')->first();
         $milestones = $milestonesDb ? json_decode($milestonesDb->value, true) : [];
 
-        $kontaksDb = Setting::where('key', 'tentang_kontak')->first();
+        $kontaksDb = Setting::query()->where('key', 'tentang_kontak')->first();
         $kontaks = $kontaksDb ? json_decode($kontaksDb->value, true) : [];
 
         $produkUnggulan = [
@@ -46,13 +46,13 @@ class PageController extends Controller
     public function editTentang()
     {
         // Ambil data saat ini dari database
-        $ceritaDb = Setting::where('key', 'tentang_cerita')->first();
+        $ceritaDb = Setting::query()->where('key', 'tentang_cerita')->first();
         $cerita = $ceritaDb ? $ceritaDb->value : '';
 
-        $milestonesDb = Setting::where('key', 'tentang_milestones')->first();
+        $milestonesDb = Setting::query()->where('key', 'tentang_milestones')->first();
         $milestones = $milestonesDb ? json_decode($milestonesDb->value, true) : [];
 
-        $kontaksDb = Setting::where('key', 'tentang_kontak')->first();
+        $kontaksDb = Setting::query()->where('key', 'tentang_kontak')->first();
         $kontaks = $kontaksDb ? json_decode($kontaksDb->value, true) : [];
 
         // Lempar ke file view khusus admin
@@ -65,7 +65,7 @@ class PageController extends Controller
     public function updateTentang(Request $request)
     {
         // 1. Simpan Teks Cerita
-        Setting::updateOrCreate(
+        Setting::query()->updateOrCreate(
             ['key' => 'tentang_cerita'],
             ['value' => $request->cerita]
         );
@@ -73,7 +73,7 @@ class PageController extends Controller
         // 2. Simpan Data Milestones (Ubah array dari form jadi JSON)
         if ($request->has('milestones')) {
             // array_values() berguna untuk mereset nomor urut array jika ada baris yang dihapus admin
-            Setting::updateOrCreate(
+            Setting::query()->updateOrCreate(
                 ['key' => 'tentang_milestones'],
                 ['value' => json_encode(array_values($request->milestones))]
             );
@@ -81,7 +81,7 @@ class PageController extends Controller
 
         // 3. Simpan Data Kontak
         if ($request->has('kontaks')) {
-            Setting::updateOrCreate(
+            Setting::query()->updateOrCreate(
                 ['key' => 'tentang_kontak'],
                 ['value' => json_encode(array_values($request->kontaks))]
             );

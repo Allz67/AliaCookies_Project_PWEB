@@ -59,7 +59,7 @@ class AuthenticatedSessionController extends Controller
     {
         return match ($user->role) {
             'admin' => redirect()->intended(route('dashboard')),
-            default => redirect()->intended(route('store.home')),
+            default => redirect()->intended(route('home')),
         };
     }
 }

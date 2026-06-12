@@ -224,24 +224,21 @@
 
             <div class="ac-panel__perks">
                 <div class="ac-panel__perk">
-                    <span>🎉</span>
                     <div>
                         <strong>Daftar Gratis</strong>
                         <small>Tidak ada biaya pendaftaran</small>
                     </div>
                 </div>
                 <div class="ac-panel__perk">
-                    <span>🚀</span>
                     <div>
                         <strong>Pemesanan Mudah</strong>
                         <small>Pesan kapan saja & di mana saja</small>
                     </div>
                 </div>
                 <div class="ac-panel__perk">
-                    <span>📦</span>
                     <div>
                         <strong>Lacak Pesanan</strong>
-                        <small>Pantau status pengiriman real-time</small>
+                        <small>Pantau status pesanan real-time</small>
                     </div>
                 </div>
             </div>

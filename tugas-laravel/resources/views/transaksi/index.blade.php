@@ -6,15 +6,6 @@
 
 <div class="page-wrapper">
 
-    @if (session('error'))
-        <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb; display: flex; align-items: center;">
-            <svg width="20" height="20" fill="currentColor" style="margin-right: 10px;" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-            </svg>
-            {{ session('error') }}
-        </div>
-    @endif
-
     {{-- ===================================================================
          BAGIAN HEADER DINAMIS (ADMIN VS CUSTOMER)
          =================================================================== --}}
@@ -29,7 +20,6 @@
         </div>
     @else
         <div class="co-header">
-            <div class="co-header__eyebrow">AKUN SAYA</div>
             <h1 class="co-header__title">Daftar <span>Transaksi</span></h1>
         </div>
     @endif

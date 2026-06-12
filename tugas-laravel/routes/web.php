@@ -17,10 +17,21 @@ use App\Http\Controllers\CheckoutController;
 // ========================================================
 Route::get('/auth/google',          [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
-// Halaman Depan Sementara (Splash)
+// Halaman Depan Sementara (Splash) & Auto-Redirect
 Route::get('/', function () {
+    // 1. Cek apakah ada user yang sedang login (sesinya masih aktif)
+    if (Auth::check()) {
+        // 2. Jika dia Admin, langsung tendang ke Dashboard
+        if (Auth::user()->role == 'admin') {
+            return redirect()->route('dashboard');
+        }
+        // 3. Jika dia Kustomer, arahkan ke Home (Katalog)
+        return redirect()->route('home');
+    }
+
+    // 4. Jika belum login sama sekali, baru tampilkan Splash Screen
     return view('Splash');
-    })->name('Splash');
+})->name('Splash');
 
 Route::get('/tentang', [PageController::class, 'tentang'])->name('tentang');
 Route::get('/kontak', [PageController::class, 'kontak'])->name('kontak');

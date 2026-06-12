@@ -57,8 +57,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('store.home')
-            ->with('success', 'Selamat datang, ' . $user->name . '! Akun kamu berhasil dibuat. 🍪');
+        return redirect()->route('login')
+            ->with('success', 'Selamat datang, ' . $user->name . '! Akun kamu berhasil dibuat.Silakan login untuk mulai berbelanja.');
     }
 
     /**
@@ -68,7 +68,7 @@ class RegisteredUserController extends Controller
     {
         return match ($user->role) {
             'admin' => redirect()->intended(route('dashboard')),
-            default => redirect()->intended(route('store.home')),
+            default => redirect()->intended(route('login')),
         };
     }
 }

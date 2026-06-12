@@ -34,14 +34,14 @@ class ProductController extends Controller
 
         // 5. Statistik untuk dashboard pengelolaan (Semuanya tetap dipertahankan utuh bawaan kodemu)
         $stokStats = [
-            'total'   => Product::sum('stok'),
-            'menipis' => Product::where('stok', '>', 0)->where('stok', '<=', 10)->count(),
-            'habis'   => Product::where('stok', 0)->count(),
+            'total'   => Product::query()->sum('stok'),
+            'menipis' => Product::query()->where('stok', '>', 0)->where('stok', '<=', 10)->count(),
+            'habis'   => Product::query()->where('stok', 0)->count(),
         ];
 
         $chartStok = [
-            'cookies' => Product::where('kategori', 'Cookies')->sum('stok'),
-            'hampers' => Product::where('kategori', 'Hampers')->sum('stok'),
+            'cookies' => Product::query()->where('kategori', 'Cookies')->sum('stok'),
+            'hampers' => Product::query()->where('kategori', 'Hampers')->sum('stok'),
         ];
 
         // 6. Kembalikan ke view utama 'pengelolaan' lengkap dengan semua variabel pendukungnya

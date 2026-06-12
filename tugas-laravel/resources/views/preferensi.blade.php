@@ -119,12 +119,10 @@
 
             const result = await response.json();
             if (result.status === 'success') {
-                alert('Berhasil! Preferensi Anda telah disimpan.');
-                window.location.reload();
+                window.location.href = "{{ route('preferensi.index') }}?success=Pengaturan berhasil disimpan";
             }
         } catch (error) {
             console.error("Gagal mengirim preferensi ke server:", error);
-            alert("Terjadi kesalahan saat menyimpan pengaturan.");
         }
     });
 </script>

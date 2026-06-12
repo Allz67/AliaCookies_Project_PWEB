@@ -34,22 +34,6 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </a>
             </div>
-            <div class="sc-hero__stats">
-                <div class="sc-hero__stat">
-                    <strong>500+</strong>
-                    <span>Pelanggan</span>
-                </div>
-                <div class="sc-hero__stat-divider"></div>
-                <div class="sc-hero__stat">
-                    <strong>{{ $cookies->count() + $hampers->count() }}</strong>
-                    <span>Varian Produk</span>
-                </div>
-                <div class="sc-hero__stat-divider"></div>
-                <div class="sc-hero__stat">
-                    <strong>100%</strong>
-                    <span>Bahan Asli</span>
-                </div>
-            </div>
         </div>
 
         <div class="sc-hero__visual">

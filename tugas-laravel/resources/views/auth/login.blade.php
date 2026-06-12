@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/storefront.css') }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
 <body class="ac-auth-body">
@@ -73,12 +72,14 @@
             </div>
 
             {{-- Flash messages --}}
-            @if(session('success'))
-                <div class="ac-alert ac-alert--success">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    {{ session('success') }}
-                </div>
-            @endif
+            <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; pointer-events: none;">
+                @if(session('success') || session('status'))
+                    <div class="toast-alert" style="background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(0); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); pointer-events: auto;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        <span style="font-weight: 500; font-size: 14px; font-family: ui-sans-serif, system-ui, sans-serif;">{{ session('success') ?? session('status') }}</span>
+                    </div>
+                @endif
+            </div>
 
             @if($errors->has('email') && !$errors->has('password'))
                 <div class="ac-alert ac-alert--error">
@@ -128,7 +129,6 @@
                 <div class="ac-field @error('password') ac-field--error @enderror">
                     <div class="ac-field-label-row">
                         <label for="password">Password</label>
-                        <a href="{{ route('password.request') }}" class="ac-forgot-link">Lupa password?</a>
                     </div>
                     <div class="ac-input-wrap">
                         <svg class="ac-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -188,6 +188,17 @@ document.getElementById('loginForm').addEventListener('submit', function() {
     const btn = document.getElementById('loginBtn');
     btn.innerHTML = '<span>Memproses...</span>';
     btn.disabled = true;
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast-alert');
+    toasts.forEach(toast => {
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => { toast.remove(); }, 500);
+        }, 3500);
+    });
 });
 </script>
 </body>

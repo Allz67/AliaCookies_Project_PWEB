@@ -273,65 +273,34 @@ function tambahKeKeranjang(produkId, beliSekarang, btn) {
         const isJson = response.headers.get('content-type')?.includes('application/json');
         const data   = isJson ? await response.json() : null;
 
-        btn.innerHTML = originalHTML;
-        btn.disabled  = false;
-
         if (response.status === 401) {
-            showToast('Kamu harus login dulu untuk belanja!', 'error');
-            setTimeout(() => window.location.href = '{{ route("login") }}', 1500);
+            alert('Kamu harus login dulu untuk belanja!');
+            window.location.href = '{{ route("login") }}';
             return;
         }
 
         if (response.ok) {
             if (beliSekarang) {
-                // Beli Sekarang → langsung ke cart
+                // Beli Sekarang → langsung pindah ke cart
                 window.location.href = '{{ route("cart.index") }}';
             } else {
-                // Masukkan Keranjang → tampilkan toast
-                showToast('Produk berhasil masuk keranjang!', 'success');
-
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Masukkan Keranjang → Reload halaman otomatis untuk memicu Toast Global
+                window.location.reload();
             }
         } else {
+            btn.innerHTML = originalHTML;
+            btn.disabled  = false;
             const msg = data?.message || 'Gagal menambah ke keranjang.';
-            showToast(msg, 'error');
+            alert(msg);
         }
     })
     .catch(() => {
         btn.innerHTML = originalHTML;
         btn.disabled  = false;
-        showToast('Gagal menghubungi server. Cek koneksi internetmu.', 'error');
+        alert('Gagal menghubungi server. Cek koneksi internetmu.');
     });
 }
 
-// ── Toast Notification ──
-function showToast(message, type = 'success') {
-    // Hapus toast lama kalau masih ada
-    document.querySelectorAll('.sc-toast').forEach(t => t.remove());
-
-    const toast = document.createElement('div');
-    toast.className = 'sc-toast sc-toast--' + type;
-    toast.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            ${type === 'success'
-                ? '<polyline points="20 6 9 17 4 12"/>'
-                : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}
-        </svg>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(toast);
-
-    // Animasi masuk
-    requestAnimationFrame(() => toast.classList.add('sc-toast--show'));
-
-    // Auto dismiss
-    setTimeout(() => {
-        toast.classList.remove('sc-toast--show');
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
 
 function beliLangsung(productId) {
     let qtyInput = document.getElementById('detailQty');

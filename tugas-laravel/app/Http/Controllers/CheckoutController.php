@@ -6,7 +6,6 @@ use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Midtrans\Config;
@@ -15,75 +14,39 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    /**
-     * ID Kota Jember sebagai origin tetap toko Alia Cookies.
-     * Dapatkan ID ini dari endpoint /destination/province -> /destination/city
-     * menggunakan Komerce API V2 dan sesuaikan dengan data di dashboard kamu.
-     */
-    private const ORIGIN_CITY_ID = '256'; // ID Kota Jember di Komerce API V2
-
-    /**
-     * Base URL Komerce API V2 (RajaOngkir baru).
-     */
-    private string $apiBase;
-    private string $apiKey;
-
-    public function __construct()
-    {
-        $this->apiBase = rtrim(env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1'), '/');
-        $this->apiKey  = env('RAJAONGKIR_API_KEY', 'lly30A0X39799562540ab1cdFputdZKg');
-    }
-
     // =========================================================================
-    // HELPER: Buat instance HTTP client Komerce API agar tidak perlu repeat
+    // INDEX — tampil halaman checkout
     // =========================================================================
-    private function apiClient()
-    {
-        return Http::withoutVerifying()
-            ->withHeaders(['key' => $this->apiKey])
-            ->withOptions([
-                'curl' => [
-                    CURLOPT_IPRESOLVE      => CURL_IPRESOLVE_V4,
-                    CURLOPT_CONNECTTIMEOUT => 30,
-                    CURLOPT_TIMEOUT        => 30,
-                ],
-            ]);
-    }
-
     public function index(Request $request)
     {
         $user = Auth::user();
 
-        // 1. VALIDASI: Cek apakah profil alamat user sudah lengkap
         if (!$user->provinsi_id || !$user->kota_id || !$user->detail_alamat) {
-            return redirect()->route('profile.edit') // Sesuaikan dengan nama rute edit profilmu
+            return redirect()->route('profile')
                 ->with('error', 'Halo! Tolong lengkapi alamat pengiriman Anda terlebih dahulu sebelum checkout ya.');
         }
 
-        $items = [];
+        $items      = [];
         $totalHarga = 0;
-        $totalBerat = 0; // Asumsi berat per toples, misal 500 gram
+        $totalBerat = 0;
 
         if ($request->has('product_id')) {
             $product = Product::findOrFail($request->product_id);
-            $qty = $request->input('qty', 1);
-            $beratProduk = $product->berat ?? 100;
+            $qty     = $request->input('qty', 1);
 
             $items[] = [
                 'id'       => $product->id,
-                'nama'     => $product->nama,     // Dibenarkan kembali ke 'nama'
-                'gambar'   => $product->foto,   // Dibenarkan kembali ke 'gambar'
-                'harga'    => $product->harga,    // Dibenarkan kembali ke 'harga'
+                'nama'     => $product->nama,
+                'gambar'   => $product->foto,
+                'harga'    => $product->harga,
                 'qty'      => $qty,
                 'subtotal' => $product->harga * $qty,
-                'berat'    => $product->berat * $qty
+                'berat'    => ($product->berat ?? 500) * $qty,
             ];
 
             $totalHarga = $product->harga * $qty;
-            $totalBerat = $product->berat * $qty;
-        }
-        // 3. LOGIKA JIKA DARI "KERANJANG BELANJA"
-        else {
+            $totalBerat = ($product->berat ?? 500) * $qty;
+        } else {
             $carts = Cart::with('product')->where('user_id', $user->id)->get();
 
             if ($carts->isEmpty()) {
@@ -91,17 +54,15 @@ class CheckoutController extends Controller
             }
 
             foreach ($carts as $cart) {
-                // Pengecekan produk (biar tidak error attempt to read null)
+                /** @var \App\Models\Cart $cart */
                 if (!$cart->product) {
-                    $cart->delete();
+                    $cart->query()->delete();
                     continue;
                 }
 
                 $hargaProduk = $cart->product->harga ?? 0;
-
-                $jumlahBeli = $cart->jumlah ?? $cart->qty ?? 1;
-
-                $subtotal = $hargaProduk * $jumlahBeli;
+                $jumlahBeli  = $cart->jumlah ?? $cart->qty ?? 1;
+                $subtotal    = $hargaProduk * $jumlahBeli;
 
                 $items[] = [
                     'id'       => $cart->product->id,
@@ -110,294 +71,259 @@ class CheckoutController extends Controller
                     'harga'    => $hargaProduk,
                     'qty'      => $jumlahBeli,
                     'subtotal' => $subtotal,
-                    'berat'    => ($cart->product->berat ?? 500) * $jumlahBeli
+                    'berat'    => ($cart->product->berat ?? 500) * $jumlahBeli,
                 ];
 
                 $totalHarga += $subtotal;
                 $totalBerat += ($cart->product->berat ?? 500) * $jumlahBeli;
             }
         }
+
         $sumberOrder = $request->has('product_id') ? 'langsung' : 'keranjang';
 
-        // 4. Kirim data ke tampilan halaman Checkout
         return view('transaksi.Checkout', compact('items', 'totalHarga', 'totalBerat', 'user', 'sumberOrder'));
     }
 
     // =========================================================================
-    // HELPER: Validasi kelengkapan alamat profil user
-    // Mengembalikan true jika lengkap, false jika ada field yang kosong.
+    // PROSES PAYMENT (Checkout Manual)
     // =========================================================================
-    private function isProfileAddressComplete(): bool
-    {
-        $user = Auth::user();
-
-        // Sesuaikan nama kolom dengan struktur tabel `users` kamu.
-        // Minimal: provinsi_id, kota_id, dan alamat_detail harus terisi.
-        return ! empty($user->provinsi_id)
-            && ! empty($user->kota_id)
-            && ! empty($user->alamat_detail)
-            && ! empty($user->no_hp);
-    }
-
-    public function hitungOngkir(Request $request)
-    {
-        $request->validate([
-            'destination' => 'required',
-            'weight'      => 'required|numeric|min:1',
-        ]);
-
-        try {
-            $kurir = $request->courier;
-            if (empty($kurir)) {
-                $kurir = 'jnt';
-            }
-
-            $response = $this->apiClient()
-                ->asForm()
-                ->post($this->apiBase . '/calculate/domestic-cost', [
-                    'origin'      => self::ORIGIN_CITY_ID,
-                    'destination' => $request->destination,
-                    'weight'      => $request->weight,
-                    'courier'     => $kurir,
-                ]);
-
-            $data = $response->json();
-
-            if (! $response->successful()) {
-                $errorMsg = $data['meta']['message']
-                            ?? ($data['status']['description'] ?? null)
-                            ?? ($data['message'] ?? null)
-                            ?? 'Gagal menghubungi API ongkir.';
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tolak dari API: ' . $errorMsg,
-                    'debug'   => $data
-                ], $response->status());
-            }
-
-            $results = $data['data'] ?? [];
-
-            return response()->json([
-                'success' => true,
-                'data'    => $results,
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-
     public function prosesPayment(Request $request)
     {
-        $user = Auth::user();
+        $user         = Auth::user();
+        $transaksiId  = 'TRX-' . strtoupper(Str::random(7));
+        $metode       = $request->tipe_pengiriman;
 
-        // Bikin ID Transaksi Unik sesuai formatmu, misal: #TRX-ABCD123
-        $transaksiId = 'TRX-' . strtoupper(Str::random(7));
+        $alamatPengiriman = ($metode == 'pickup')
+            ? 'Ambil di Toko Alia Cookies'
+            : $request->alamat_lengkap;
 
-        // Tentukan alamat pengiriman berdasarkan pilihan
-        $alamatPengiriman = ($request->tipe_pengiriman == 'pickup')
-                            ? 'Ambil di Toko Alia Cookies'
-                            : $request->alamat_lengkap; // Pastikan dari frontend ngirim ini
+        // Pickup langsung ke Unpaid (karena ongkir 0), Delivery menunggu admin (Pending)
+        $statusPesanan = ($metode == 'pickup') ? 'Unpaid' : 'Pending';
 
-        // 1. Simpan Data ke Tabel `transaksis`
         $transaksi = Transaction::create([
-            'id' => $transaksiId, // Pastikan di Model Transaksi: public $incrementing = false; protected $keyType = 'string';
-            'user_id' => $user->id,
-            'total_harga' => $request->total_harga,
-            'payment_status' => 'Unpaid',
-            'status_pesanan' => 'Proses',
+            'id'               => $transaksiId,
+            'user_id'          => $user->id,
+            'total_harga'      => $request->total_harga,
+            'payment_status'   => 'Unpaid',
+            'status_pesanan'   => $statusPesanan,
             'shipping_address' => $alamatPengiriman,
-            'shipping_cost' => $request->ongkir,
-            'courier' => $request->kurir,
-            'tanggal_transaksi' => now()->format('d M Y'),
+            'shipping_cost'    => 0,
+            'courier'          => ($metode == 'pickup') ? 'Pickup' : 'Menunggu Konfirmasi',
+            'tanggal_transaksi'=> now()->format('d M Y'),
         ]);
 
-        // 2. Simpan Data ke Tabel `detail_transaksis`
         $items = json_decode($request->items, true);
         foreach ($items as $item) {
             TransactionItem::create([
                 'id_transaksi' => $transaksi->id,
-                'id_produk' => $item['id'], // Sesuaikan dengan key array $items di fungsi index()
-                'nama_produk' => $item['nama'],
-                'jumlah' => $item['qty'],
+                'id_produk'    => $item['id'],
+                'nama_produk'  => $item['nama'],
+                'jumlah'       => $item['qty'],
                 'harga_satuan' => $item['harga'],
-                'subtotal' => $item['subtotal']
+                'subtotal'     => $item['subtotal'],
             ]);
-            Product::where('id', $item['id'])->decrement('stok', $item['qty']);
+            Product::query()->where('id', $item['id'])->decrement('stok', $item['qty']);
         }
 
-        // 3. Kosongkan keranjang jika sumbernya dari keranjang
         if ($request->sumberOrder == 'keranjang') {
-            Cart::where('user_id', $user->id)->delete();
+            Cart::query()->where('user_id', $user->id)->delete();
         }
 
-        // 4. Hubungkan dengan Midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        // Jika Pickup, ongkir sudah pasti 0, langsung buatkan Snap Token Midtrans sekarang!
+        if ($metode == 'pickup') {
+            Config::$serverKey    = env('MIDTRANS_SERVER_KEY');
+            Config::$isProduction = false;
+            Config::$isSanitized  = true;
+            Config::$is3ds        = true;
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $transaksi->id,
-                'gross_amount' => $transaksi->total_harga,
-            ],
-            'customer_details' => [
-                'first_name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone ?? '08000000000',
-            ],
-        ];
-
-        try {
-            // Dapatkan Token Midtrans
-            $snapToken = Snap::getSnapToken($params);
-
-            // Update snap_token ke database transaksis
-            $transaksi->update(['snap_token' => $snapToken]);
-
-            return response()->json([
-                'success' => true,
-                'snap_token' => $snapToken
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            $params = [
+                'transaction_details' => [
+                    'order_id'     => $transaksi->id,
+                    'gross_amount' => (int) $transaksi->total_harga,
+                ],
+                'customer_details' => [
+                    'first_name' => $user->name,
+                    'email'      => $user->email,
+                    'phone'      => $user->phone ?? $user->no_hp ?? '08000000000',
+                ],
+            ];
+            $transaksi->update(['snap_token' => Snap::getSnapToken($params)]);
         }
+
+        session()->flash('success', 'Pesanan berhasil dibuat! ' . ($metode == 'pickup' ? 'Silakan lakukan pembayaran.' : 'Menunggu konfirmasi ongkir dari Admin.'));
+
+        return response()->json(['success' => true, 'order_id' => $transaksiId]);
     }
 
+    // =========================================================================
+    // CALLBACK MIDTRANS
+    // =========================================================================
     public function callback(Request $request)
     {
-        // 1. Ambil data penting dari laporan Midtrans
-        $status_code      = $request->status_code;
-        $order_id         = $request->order_id;
-        $gross_amount     = $request->gross_amount;
-        $transaction_status = $request->transaction_status;
-        $signature_key    = $request->signature_key;
+        $serverKey      = env('MIDTRANS_SERVER_KEY');
+        $localSignature = hash('sha512', $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
 
-        // 2. Validasi Keamanan (Signature Key) agar data tidak bisa dimanipulasi orang lain
-        $serverKey = env('MIDTRANS_SERVER_KEY');
-        $localSignature = hash("sha512", $order_id . $status_code . $gross_amount . $serverKey);
-
-        if ($signature_key !== $localSignature) {
+        if ($request->signature_key !== $localSignature) {
             return response()->json(['message' => 'Signature tidak valid'], 403);
         }
 
-        // 3. Cari data transaksi di database berdasarkan order_id
-        $transaksi = Transaction::find($order_id);
+        $transaksi = Transaction::query()->find($request->order_id);
+        if (! $transaksi) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
 
-        if (!$transaksi) {
-            return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
-        }
-
-        // 4. Ubah status di database sesuai laporan Midtrans
-        if ($transaction_status == 'settlement' || $transaction_status == 'capture') {
-            // Jika sukses dibayar
-            $transaksi->update(['payment_status' => 'Dibayar']);
-        } elseif ($transaction_status == 'pending') {
-            // Jika kustomer baru memunculkan kode bayar tapi belum transfer
+        $status = $request->transaction_status;
+        if (in_array($status, ['settlement', 'capture'])) {
+            // Jika dibayar, payment status berubah dan pesanan otomatis masuk ke Proses
+            $transaksi->update([
+                'payment_status' => 'Dibayar',
+                'status_pesanan' => 'Proses'
+            ]);
+        } elseif ($status === 'pending') {
             $transaksi->update(['payment_status' => 'Menunggu Pembayaran']);
-        } elseif (in_array($transaction_status, ['deny', 'expire', 'cancel'])) {
-            // Jika gagal, kadaluwarsa, atau dibatalkan
-            $transaksi->update(['payment_status' => 'Gagal']);
+        } elseif (in_array($status, ['deny', 'expire', 'cancel'])) {
+            $transaksi->update([
+                'payment_status' => 'Gagal',
+                'status_pesanan' => 'Dibatalkan'
+            ]);
         }
     }
 
-    public function showDetail($id)
+    // =========================================================================
+    // HALAMAN TRANSAKSI (Admin & Customer)
+    // =========================================================================
+    public function indexTransaksi(Request $request) // <-- Wajib tambah Request $request
     {
-        // Cari transaksi beserta item-itemnya.
-        // Asumsi relasi di model Transaction adalah public function items()
-        // yang merujuk ke tabel detail_transaksis
-        $transaksi = Transaction::with('items.product')->findOrFail($id);
+        $user  = Auth::user();
 
-        // Pastikan hanya pemilik yang bisa melihat transaksinya sendiri
-        if ($transaksi->user_id !== Auth::id()) {
-            abort(403, 'Akses ditolak.');
+        // 1. Mulai Query dasar
+        $query = Transaction::with(['items.product', 'user']);
+
+        // 2. Filter berdasarkan Role (Customer hanya melihat miliknya sendiri)
+        if ($user->role !== 'admin') {
+            $query->where('user_id', $user->id);
         }
 
-        return view('transaksi.DetailTransaksi', compact('transaksi'));
-    }
+        // 3. LOGIKA BARU: Filter berdasarkan status dari Dropdown
+        if ($request->has('status') && $request->status != '') {
+            $status = $request->status;
 
-    public function indexTransaksi()
-    {
-        $user = Auth::user();
-
-        // Menggunakan nama model Transaksi (sesuaikan huruf besar kecilnya dengan proyekmu, misal: Transaction atau Transaksi)
-        $query = \App\Models\Transaction::with(['items.product', 'user'])->latest();
-
-        if ($user->role === 'admin') {
-            // Admin: Lihat semua transaksi masuk, batasi 10 per halaman
-            $transaksis = $query->paginate(10);
-        } else {
-            // Customer: Hanya lihat transaksi milik sendiri
-            $transaksis = $query->where('user_id', $user->id)->paginate(10);
+            // Khusus untuk 'unpaid', kita cek payment_status-nya
+            if ($status == 'unpaid') {
+                $query->whereIn('payment_status', ['Unpaid', 'Menunggu Pembayaran', 'Pending']);
+            } else {
+                // Untuk status lain (proses, dikirim, selesai, dibatalkan), cek status_pesanan-nya
+                $query->where('status_pesanan', $status);
+            }
         }
 
-        // Mengarah ke folder transaksi file index.blade.php
+        // 4. Urutkan dari yang terbaru dan paginate
+        $transaksis = $query->latest()->paginate(10);
+
+        // 5. Bawa query parameter saat pagination agar filter tidak hilang saat pindah halaman
+        $transaksis->appends($request->query());
+
         return view('transaksi.index', compact('transaksis'));
     }
 
     public function detailTransaksi($id)
     {
-        $user = Auth::user();
-        $transaksi = \App\Models\Transaction::with(['items.product', 'user'])->findOrFail($id);
+        $user      = Auth::user();
+        $transaksi = Transaction::with(['items.product', 'user'])->findOrFail($id);
 
-        // Guard: Customer biasa tidak boleh intip transaksi orang lain
         if ($user->role !== 'admin' && $transaksi->user_id !== $user->id) {
             abort(403, 'Anda tidak memiliki akses ke transaksi ini.');
+        }
+
+        // ========================================================
+        // FITUR SELF-HEALING (SINKRONISASI OTOMATIS)
+        // Mencegah bug nyangkut saat testing manual di Localhost
+        // ========================================================
+        $paymentStatus = strtolower($transaksi->payment_status);
+        $orderStatus   = strtolower($transaksi->status_pesanan);
+
+        // Jika payment sudah 'Paid' / 'Dibayar', tapi status pesanan masih nyangkut di 'Unpaid'
+        if (in_array($paymentStatus, ['paid', 'dibayar', 'settlement']) && $orderStatus === 'unpaid') {
+            $transaksi->status_pesanan = 'Proses';
+            $transaksi->save();
         }
 
         return view('transaksi.DetailTransaksi', compact('transaksi'));
     }
 
-    // 2. PROSES UPDATE RESI & STATUS (KHUSUS ADMIN)
+    public function showDetail($id) { return $this->detailTransaksi($id); }
+
+    // =========================================================================
+    // UPDATE ONGKIR & RESI (Logika Admin) + SNAP TOKEN GENERATOR
+    // =========================================================================
     public function updateResi(Request $request, $id)
     {
-        $transaksi = \App\Models\Transaction::findOrFail($id);
+        $transaksi  = Transaction::findOrFail($id);
+        $statusLama = strtolower($transaksi->status_pesanan);
+        $statusBaru = strtolower($request->status_pesanan ?? $statusLama);
 
-        // 1. GEMBOK TOTAL: Jika status database sudah 'Selesai', tidak boleh diotak-atik lagi
-        if (strtolower($transaksi->status_pesanan) === 'selesai') {
-            return redirect()->back()->with('error', 'Pesanan ini sudah Selesai. Status tidak dapat diubah kembali!');
+        if (in_array($statusLama, ['selesai', 'dibatalkan'])) {
+            return redirect()->back()->with('error', 'Pesanan yang sudah Selesai/Batal tidak dapat diubah kembali!');
         }
 
-        // 2. VALIDASI INPUT: Status wajib diisi, No Resi wajib diisi jika belum ada di database
-        $request->validate([
-            'status_pesanan' => 'required|in:Proses,Dikirim,Selesai',
-            'resi_number' => $transaksi->resi_number ? 'nullable|string' : 'required|string',
-        ], [
-            'status_pesanan.required' => 'Status pesanan wajib dipilih!',
-            'status_pesanan.in' => 'Pilihan status tidak valid.',
-            'resi_number.required' => 'Nomor resi pengiriman wajib diisi!',
-        ]);
-
-        $statusLama = strtolower($transaksi->status_pesanan ?? 'proses');
-        $statusBaru = strtolower($request->status_pesanan);
-
-        // 3. VALIDASI ALUR: Tidak boleh mundur dari 'Dikirim' kembali ke 'Proses'
-        if ($statusLama === 'dikirim' && $statusBaru === 'proses') {
-            return redirect()->back()->with('error', 'Gagal! Pesanan yang sudah dikirim tidak bisa dikembalikan ke status Proses.');
+        $urutanStatus = ['pending' => 1, 'unpaid' => 2, 'proses' => 3, 'dikirim' => 4, 'selesai' => 5, 'dibatalkan' => 99];
+        if (isset($urutanStatus[$statusBaru]) && isset($urutanStatus[$statusLama])) {
+            if ($urutanStatus[$statusBaru] < $urutanStatus[$statusLama] && $statusBaru !== 'dibatalkan') {
+                return redirect()->back()->with('error', 'Status pesanan tidak boleh mundur.');
+            }
         }
 
-        // 4. GEMBOK NOMOR RESI: Jika sudah pernah terisi, paksa pakai resi lama (tidak boleh diubah)
-        $resiFinal = $transaksi->resi_number;
-        if (!$transaksi->resi_number) {
-            // Jika resi masih kosong di DB, baru pasang resi dari input form
-            $resiFinal = $request->resi_number;
+        // 1. ADMIN INPUT ONGKIR (Hanya saat Pending) -> Otomatis buat Token Midtrans
+        if ($request->has('shipping_cost') && $statusLama === 'pending') {
+            $transaksi->shipping_cost = $request->shipping_cost;
+            $transaksi->courier       = $request->courier ?? $transaksi->courier;
+
+            $totalProduk              = $transaksi->items->sum('subtotal');
+            $transaksi->total_harga   = $totalProduk + $request->shipping_cost;
+            $transaksi->status_pesanan= 'Unpaid';
+
+            // Generate Token Midtrans karena tagihan akhirnya sudah fix!
+            Config::$serverKey    = env('MIDTRANS_SERVER_KEY');
+            Config::$isProduction = false;
+            Config::$isSanitized  = true;
+            Config::$is3ds        = true;
+
+            $params = [
+                'transaction_details' => [
+                    'order_id'     => $transaksi->id,
+                    'gross_amount' => (int) $transaksi->total_harga,
+                ],
+                'customer_details' => [
+                    'first_name' => $transaksi->user->name,
+                    'email'      => $transaksi->user->email,
+                    'phone'      => $transaksi->user->phone ?? $transaksi->user->no_hp ?? '08000000000',
+                ],
+            ];
+            $transaksi->snap_token = Snap::getSnapToken($params);
         }
 
-        // Eksekusi pembaruan ke database
-        $transaksi->update([
-            'status_pesanan' => $request->status_pesanan,
-            'resi_number' => $resiFinal,
-        ]);
+        // 2. ADMIN INPUT RESI (Hanya saat Proses -> Dikirim)
+        if ($request->has('resi_number') && in_array($statusLama, ['proses', 'dikirim'])) {
+            $transaksi->resi_number = $request->resi_number;
+            if ($statusLama === 'proses' && $request->resi_number) {
+                $transaksi->status_pesanan = 'Dikirim';
+            }
+        }
 
-        return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui!');
+        if ($request->has('status_pesanan')) {
+            $transaksi->status_pesanan = $request->status_pesanan;
+
+            // JIKA DIBATALKAN -> KEMBALIKAN STOK PRODUK OTOMATIS
+            if (strtolower($request->status_pesanan) === 'dibatalkan' && $statusLama !== 'dibatalkan') {
+                $transaksi->payment_status = 'Failed';
+
+                // Looping semua produk yang dibeli di transaksi ini, lalu tambah stoknya kembali
+                foreach ($transaksi->items as $item) {
+                    \App\Models\Product::query()->where('id', $item->id_produk)->increment('stok', $item->jumlah);
+                }
+            }
+        }
+
+        $transaksi->save();
+
+        return redirect()->back()->with('success', 'Data pesanan berhasil diperbarui!');
     }
 }

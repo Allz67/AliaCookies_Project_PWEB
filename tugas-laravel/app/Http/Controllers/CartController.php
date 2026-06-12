@@ -14,7 +14,7 @@ class CartController extends Controller
      */
     public function index()
     {
-        $cartItems = Cart::with('product')
+        $cartItems = Cart::query()->with('product')
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
@@ -38,14 +38,14 @@ class CartController extends Controller
             'jumlah'    => ['sometimes', 'integer', 'min:1'],
         ]);
 
-        $produk = Product::where('is_active', 1)
+        $produk = Product::query()->where('is_active', 1)
                          ->whereNull('deleted_at')
                          ->findOrFail($request->id_produk);
 
         $jumlah = $request->input('jumlah', 1);
 
         // Cek apakah sudah ada di cart
-        $cartItem = Cart::where('user_id', Auth::id())
+        $cartItem = Cart::query()->where('user_id', Auth::id())
                         ->where('id_produk', $produk->id)
                         ->first();
 
@@ -76,10 +76,9 @@ class CartController extends Controller
             ]);
         }
 
+        session()->flash('success', $produk->nama . ' berhasil ditambahkan ke keranjang!');
         // Balas dengan JSON agar dibaca oleh JavaScript
-        return response()->json([
-            'status'  => 'success',
-            'message' => $produk->nama . ' berhasil ditambahkan ke keranjang!'
+        return response()->json(['status'  => 'success'
         ]);
     }
 
@@ -128,7 +127,7 @@ class CartController extends Controller
         abort_if($cart->user_id !== Auth::id(), 403);
 
         $nama = $cart->product->nama ?? 'Item';
-        $cart->delete();
+        $cart::query()->delete();
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
@@ -142,7 +141,7 @@ class CartController extends Controller
      */
     public function clear()
     {
-        Cart::where('user_id', Auth::id())->delete();
+        Cart::query()->where('user_id', Auth::id())->delete();
 
         return back()->with('success', 'Keranjang berhasil dikosongkan.');
     }

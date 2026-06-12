@@ -44,24 +44,6 @@
             @endif
         </div>
 
-
-        {{-- ── Flash Messages ── --}}
-        @if(session('success'))
-            <div class="ct-alert ct-alert--success" id="flashAlert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                {{ session('success') }}
-                <button class="ct-alert__close" onclick="this.parentElement.remove()">×</button>
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="ct-alert ct-alert--error" id="flashAlert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {{ session('error') }}
-                <button class="ct-alert__close" onclick="this.parentElement.remove()">×</button>
-            </div>
-        @endif
-
-
         @if($cartItems->count())
         {{-- ============================================================
              CART ITEMS LIST

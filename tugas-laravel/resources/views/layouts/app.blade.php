@@ -5,18 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Alia Cookies') — Admin Panel</title>
     <script>
-        // Helper pembaca cookie yang stabil
         function getCookie(name) {
             let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
             if (match) return decodeURIComponent(match[2]);
             return null;
         }
-
-        // Ambil data cookie 'theme', kalau kosong default ke 'system'
         const savedTheme = getCookie('theme') || 'system';
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        // Pasang class ke tag <html> secara dini
         if (savedTheme === 'dark' || (savedTheme === 'system' && systemPrefersDark)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -25,14 +20,30 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
+    {{-- =======================================================
+         GLOBAL TOAST NOTIFICATION (Melayang Kanan Atas)
+         ======================================================= --}}
+    <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; pointer-events: none;">
+        @if(session('error'))
+            <div class="toast-alert" style="background: #fff1f2; color: #9f1239; border-left: 4px solid #e11d48; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.1), 0 4px 6px -2px rgba(225, 29, 72, 0.05); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(0); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); pointer-events: auto;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span style="font-weight: 500; font-size: 14px;">{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="toast-alert" style="background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05); display: flex; align-items: center; gap: 12px; min-width: 300px; transform: translateX(0); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); pointer-events: auto;">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span style="font-weight: 500; font-size: 14px;">{{ session('success') }}</span>
+            </div>
+        @endif
+    </div>
 
     @include('partials.navbar')
 
@@ -47,6 +58,19 @@
     @stack('scripts')
 
     <script>
+        // Script Global Toast Animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast-alert');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => { toast.remove(); }, 500);
+                }, 3500);
+            });
+        });
+
+        // Script Cookies bawaanmu
         function setCookie(name, value, days = 30) {
             let expires = "";
             if (days) {
@@ -56,25 +80,15 @@
             }
             document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
         }
-
-        function getCookie(name) {
-            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-            if (match) return decodeURIComponent(match[2]);
-            return null;
-        }
-
         function deleteCookie(name) {
             document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         }
-
         function toggleDarkMode() {
             const isDarkNow = document.documentElement.classList.toggle('dark');
             setCookie('theme', isDarkNow ? 'dark' : 'light', 30);
-
             const moonIcon = document.getElementById('moon-icon');
             const sunIcon = document.getElementById('sun-icon');
             const themeText = document.getElementById('theme-text');
-
             if (isDarkNow) {
                 if(moonIcon) moonIcon.style.display = 'none';
                 if(sunIcon) sunIcon.style.display = 'inline-block';
@@ -84,7 +98,6 @@
                 if(sunIcon) sunIcon.style.display = 'none';
                 if(themeText) themeText.innerText = 'Mode Gelap';
             }
-
             const themeSelectForm = document.getElementById('theme');
             if (themeSelectForm) {
                 themeSelectForm.value = isDarkNow ? 'dark' : 'light';
@@ -94,6 +107,5 @@
         document.documentElement.classList.remove('font-sm', 'font-md', 'font-lg');
         document.documentElement.classList.add('font-' + savedFont);
     </script>
-
 </body>
 </html>

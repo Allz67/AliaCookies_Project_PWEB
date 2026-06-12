@@ -48,7 +48,7 @@ class DashboardController extends Controller
         $totalTerjual    = $paidTransactions->sum(function ($trx) {
             return $trx->items->sum('jumlah');
         });
-        $totalPelanggan  = \App\Models\User::where('role', 'customer')->count();
+        $totalPelanggan  = \App\Models\User::query()->where('role', 'customer')->count();
 
         $stats = [
             'pendapatan' => 'Rp ' . number_format($totalPendapatan, 0, ',', '.'),

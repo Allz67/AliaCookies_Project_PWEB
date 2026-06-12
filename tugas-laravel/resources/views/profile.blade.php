@@ -3,30 +3,63 @@
 @section('title', 'Profile')
 
 @section('content')
-<div class="page-wrapper">
-    <div class="page-header">
-        <div>
-            <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
-            <h1 class="page-title">Halo, <span class="highlight">{{ auth()->user()->name }}</span>!</h1>
-            <p class="page-sub">Lihat informasi akun Anda.</p>
+
+    @if(auth()->user()->role == 'admin')
+
+        {{-- HEADER KHUSUS ADMIN (Sesuai kodemu) --}}
+        <div class="page-header" style="margin-bottom: 24px;">
+            <div>
+                <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
+                <h1 class="page-title">Halo, <span class="highlight">{{ auth()->user()->name }}</span>!</h1>
+                <p class="page-sub">Berikut informasi profil dan pengaturan akun admin Anda.</p>
+
+            </div>
         </div>
-    </div>
+
+    @else
+
+        {{-- HEADER CUSTOMER (Desain judul sederhana) --}}
+        <div class="co-header" style="margin-bottom: 24px; text-align: left;">
+            <div class="co-header__eyebrow">PENGATURAN AKUN</div>
+            <h1 class="co-header__title" style="font-size: 28px;">Profil <span>Pengguna</span></h1>
+            <p style="color: #8a7a63; font-size: 14px; margin-top: 8px;">
+                Kelola informasi pribadi, alamat pengiriman, dan keamanan akunmu di sini.
+            </p>
+        </div>
+
+    @endif
 
     <div class="profile-grid">
+
+        {{-- =======================================================
+             KOLOM KIRI: KARTU PROFIL
+             ======================================================= --}}
         <div class="card profile-card">
             <div class="profile-avatar-wrap">
                 <div class="profile-avatar-ring">
-                    <img src="{{ asset('images/aliacookies.png') }}" alt="Logo" class="profile-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                    <div class="profile-avatar-fallback" style="display:none">
-                        <span>{{ strtoupper(substr($username, 0, 1)) }}</span>
-                    </div>
+                    @if(auth()->user()->role === 'admin')
+                        <img src="{{ asset('images/aliacookies.png') }}" alt="Logo" class="profile-avatar">
+                    @else
+                        <div class="profile-avatar-fallback" style="display:flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; background: #ebd9c8; color: #8b5e3c; border-radius: 50%;">
+                            <span>{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        </div>
+                    @endif
                 </div>
-                <div class="profile-badge-role">{{ $user['role'] }}</div>
+
+                @if(auth()->user()->role === 'admin')
+                    <div class="profile-badge-role">Admin</div>
+                @endif
             </div>
-            <h2 class="profile-name">{{ $user['nama'] }}</h2>
+
+            <h2 class="profile-name">{{ auth()->user()->name }}</h2>
+
             <div class="profile-chips">
-                <span class="chip-tag chip-active">● Aktif</span>
-                <span class="chip-tag">{{ ucfirst(auth()->user()->role) }}</span>
+                <span class="chip-tag chip-active">● Akun Aktif</span>
+                @if(auth()->user()->role === 'admin')
+                    <span class="chip-tag">Admin System</span>
+                @else
+                    <span class="chip-tag">Customer</span>
+                @endif
             </div>
 
             <div class="profile-divider"></div>
@@ -34,13 +67,13 @@
             <div class="profile-meta">
                 <div class="profile-meta-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                    <span>{{ $user['email'] }}</span>
+                    <span>{{ auth()->user()->email }}</span>
                 </div>
                 <div class="profile-meta-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     <span>
                         @if(auth()->user()->detail_alamat)
-                            {{ auth()->user()->detail_alamat }}, {{ auth()->user()->kota_nama }}, {{ auth()->user()->provinsi_nama }}
+                            {{ auth()->user()->detail_alamat }}, {{ auth()->user()->kota_nama }}
                         @else
                             <em style="color: #a0a0a0;">Lokasi belum diisi</em>
                         @endif
@@ -48,28 +81,24 @@
                 </div>
                 <div class="profile-meta-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.53 6.53l1.62-1.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    <span>{{ $user['no_hp'] }}</span>
+                    <span>{{ auth()->user()->phone == '0000' || !auth()->user()->phone ? 'Belum diisi' : auth()->user()->phone }}</span>
                 </div>
             </div>
         </div>
 
+        {{-- =======================================================
+             KOLOM KANAN: INFORMASI & FORM ALAMAT
+             ======================================================= --}}
         <div class="profile-detail-col">
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f4e8df; padding-bottom: 15px; margin-bottom: 15px;">
                     <h2 class="card-title" style="margin: 0;">Informasi Akun</h2>
 
-                    {{-- TOMBOL EDIT BARU: Sudah berbentuk Button Premium Berwarna Mocha --}}
+                    {{-- TOMBOL EDIT --}}
                     <button type="button" id="btnToggleEdit" onclick="toggleEditMode()" style="background-color: #8b5e3c; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 94, 60, 0.15); transition: all 0.3s ease;">
                         <span></span> Edit Profil
                     </button>
                 </div>
-
-                {{-- Flash Message Sukses --}}
-                @if(session('success'))
-                    <div id="successAlert" style="background-color: #ebd9c8; color: #5a3e2b; padding: 12px 15px; margin-bottom: 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; transition: opacity 0.5s ease; opacity: 1;">
-                        {{ session('success') }}
-                    </div>
-                @endif
 
                 {{-- ── MODE LIHAT (Default) ── --}}
                 <div class="info-list" id="profileViewMode">
@@ -77,12 +106,16 @@
                         <span class="info-label">Nama Lengkap</span>
                         <span class="info-value">{{ auth()->user()->name }}</span>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Role Akses</span>
-                        <span class="info-value">
-                            <span class="status-badge status-selesai" style="text-transform: uppercase; font-size: 0.75rem;">{{ auth()->user()->role }}</span>
-                        </span>
-                    </div>
+
+                    @if(auth()->user()->role === 'admin')
+                        <div class="info-row">
+                            <span class="info-label">Role Akses</span>
+                            <span class="info-value">
+                                <span class="status-badge status-selesai" style="text-transform: uppercase; font-size: 0.75rem;">{{ auth()->user()->role }}</span>
+                            </span>
+                        </div>
+                    @endif
+
                     <div class="info-row">
                         <span class="info-label">Email</span>
                         <span class="info-value">{{ auth()->user()->email }}</span>
@@ -91,10 +124,8 @@
                         <span class="info-label">No. WhatsApp</span>
                         <span class="info-value">{{ auth()->user()->phone == '0000' || !auth()->user()->phone ? 'Belum diisi' : auth()->user()->phone }}</span>
                     </div>
-                    {{-- Baris Tampilan Alamat Baru --}}
                     <div class="info-row">
                         <span class="info-label">Alamat Rumah</span>
-                        {{-- Cek apakah detail alamat sudah diisi --}}
                         @if(auth()->user()->detail_alamat)
                             <span style="text-align: right; max-width: 65%; line-height: 1.5; color: #4a3322;">
                                 {{ auth()->user()->detail_alamat }}, Kec. {{ auth()->user()->kecamatan }}, {{ auth()->user()->kota_nama }}, {{ auth()->user()->provinsi_nama }} ({{ auth()->user()->kode_pos }})
@@ -109,7 +140,7 @@
                     </div>
                 </div>
 
-                {{-- ── MODE EDIT (Disembunyikan Secara Default) ── --}}
+                {{-- ── MODE EDIT ── --}}
                 <form id="profileEditMode" action="{{ route('profile.update') }}" method="POST" style="display: none; padding: 10px 5px;">
                     @csrf
                     @method('PATCH')
@@ -132,10 +163,7 @@
                         @error('phone') <span style="color: red; font-size: 0.8rem;">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Kotak Input Alamat Baru (Menggunakan Textarea agar muat panjang) --}}
                     <div class="address-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-
-                        {{-- Input Tersembunyi untuk menyimpan nama (Bukan ID angkanya saja) --}}
                         <input type="hidden" name="provinsi_nama" id="provinsi_nama" value="{{ auth()->user()->provinsi_nama }}">
                         <input type="hidden" name="kota_nama" id="kota_nama" value="{{ auth()->user()->kota_nama }}">
 
@@ -143,7 +171,6 @@
                             <label>Provinsi</label>
                             <select name="provinsi_id" id="provinsi" onchange="getKota()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ebd9c8;">
                                 <option value="">-- Pilih Provinsi --</option>
-                                {{-- Pilihan provinsi akan diisi otomatis oleh JavaScript --}}
                             </select>
                         </div>
 
@@ -151,7 +178,6 @@
                             <label>Kota / Kabupaten</label>
                             <select name="kota_id" id="kota" onchange="setKotaNama()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ebd9c8;" disabled>
                                 <option value="">-- Pilih Kota --</option>
-                                {{-- Pilihan kota akan diisi otomatis setelah provinsi dipilih --}}
                             </select>
                         </div>
 
@@ -172,7 +198,7 @@
                     </div>
 
                     <div style="display: flex; gap: 10px; border-top: 1px solid #f4e8df; padding-top: 15px;">
-                        <button type="submit" style="background-color: #4a7c51; color: white; border: none; padding: 11px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(74,124,81,0.15);">Simpan</button>
+                        <button type="submit" style="background-color: #4a7c51; color: white; border: none; padding: 11px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(74,124,81,0.15);">Simpan Alamat</button>
                         <button type="button" onclick="toggleEditMode()" style="background-color: #f4e8df; color: #8b5e3c; border: none; padding: 11px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">Batal</button>
                     </div>
                 </form>
@@ -180,7 +206,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Sesi Login</h2>
+                    <h2 class="card-title">Keamanan Akun</h2>
                 </div>
                 <div class="info-list">
                     <div class="info-row">
@@ -189,7 +215,7 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">Login Terakhir</span>
-                        <span class="info-value">{{ $user['tanggal_login'] }}</span>
+                        <span class="info-value">{{ auth()->user()->updated_at->format('d M Y, H:i') }}</span>
                     </div>
                 </div>
 
@@ -203,12 +229,25 @@
         </div>
     </div>
 </div>
-@endsection
 
 <script>
-
     document.addEventListener('DOMContentLoaded', function() {
         fetchProvinsi();
+
+        // Animasi Notifikasi Toast
+        const toasts = document.querySelectorAll('.toast-alert');
+        toasts.forEach(toast => {
+            // Tunggu 3.5 detik, lalu geser ke kanan sampai hilang
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+
+                // Hapus elemen dari memori setelah animasinya selesai
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 3500);
+        });
     });
 
     function fetchProvinsi() {
@@ -223,24 +262,19 @@
                     let option = document.createElement('option');
                     option.value = prov.id;
                     option.text = prov.name;
-                    // 1. TEMPELKAN DULU KE LAYAR
                     dropdown.appendChild(option);
 
-                    // 2. BARU DIPILIH
                     if(prov.id == savedProvinsiId) {
                         option.selected = true;
                     }
                 });
 
-                // 3. PANGGIL KOTA SETELAH SEMUA PROVINSI SELESAI DITEMPEL
                 if (savedProvinsiId) {
-                    // Kirimkan ID kota yang tersimpan untuk dipilih otomatis
                     getKota("{{ auth()->user()->kota_id }}");
                 }
             });
     }
 
-    // Tambahkan parameter 'autoSelectId' khusus saat halaman pertama dimuat
     function getKota(autoSelectId = null) {
         let provinsiDropdown = document.getElementById('provinsi');
         let provinsiId = provinsiDropdown.value;
@@ -254,7 +288,6 @@
         kotaDropdown.innerHTML = '<option value="">Memuat...</option>';
         kotaDropdown.disabled = true;
 
-        // Jangan kosongkan input nama kota jika sedang mode auto-load
         if (!autoSelectId) {
             kotaNamaInput.value = '';
         }
@@ -271,7 +304,6 @@
                         option.value = kota.id;
                         option.text = kota.name;
 
-                        // Pilih otomatis jika ID-nya cocok
                         if(autoSelectId && kota.id == autoSelectId) {
                             option.selected = true;
                         }
@@ -289,20 +321,7 @@
             document.getElementById('kota_nama').value = kotaDropdown.options[kotaDropdown.selectedIndex].text;
         }
     }
-    // 1. PENGHILANG PESAN OTOMATIS (Ditaruh di LUAR fungsi toggle)
-    document.addEventListener('DOMContentLoaded', function() {
-        const alertBox = document.getElementById('successAlert');
-        if (alertBox) {
-            setTimeout(() => {
-                alertBox.style.opacity = '0'; // Bikin perlahan transparan
-                setTimeout(() => {
-                    alertBox.style.display = 'none'; // Hilangkan dari layout setelah transparan
-                }, 500);
-            }, 3000); // 3000 milidetik = 3 detik
-        }
-    });
 
-    // 2. FUNGSI TOGGLE EDIT PROFIL
     function toggleEditMode() {
         const viewMode = document.getElementById('profileViewMode');
         const editMode = document.getElementById('profileEditMode');
@@ -311,16 +330,17 @@
         if (editMode.style.display === 'none') {
             editMode.style.display = 'block';
             viewMode.style.display = 'none';
-            btnToggle.style.display = 'none'; // Sembunyikan tombol utama saat form terbuka
+            btnToggle.style.display = 'none';
         } else {
             editMode.style.display = 'none';
             viewMode.style.display = 'block';
-            btnToggle.style.display = 'block';
+            btnToggle.style.display = 'flex';
         }
     }
 
-    // 3. BUKA FORM OTOMATIS JIKA ADA ERROR VALIDASI
     @if ($errors->any())
         toggleEditMode();
     @endif
 </script>
+
+@endsection

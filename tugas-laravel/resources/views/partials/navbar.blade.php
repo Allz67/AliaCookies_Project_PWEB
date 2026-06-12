@@ -25,23 +25,20 @@
                 Pengelolaan
             </a>
         </li>
-        <li></li>
+        <li>
             <a href="{{ route('transaksi.index') }}" class="{{ request()->routeIs('transaksi.index') ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
                 Transaksi
             </a>
         </li>
+        <li>
             <a href="{{ route('admin.tentang.edit') }}" class="{{ request()->routeIs('admin.tentang.edit') ? 'active' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 Tentang Kami
             </a>
         </li>
-        <li>
-            <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Profile
-            </a>
-        </li>
+
+        {{-- Menu Profile lama yang ada di sini sudah DIHAPUS --}}
 
         <li>
             <a href="javascript:void(0)" onclick="toggleDarkMode()" style="display: flex; align-items: center; gap: 8px;">
@@ -58,29 +55,35 @@
         </li>
     </ul>
 
-    <li class="nav-user">
-        <div class="user-profile-nav">
-            <div class="user-avatar">
-                {{ substr(auth()->user()->name, 0, 1) }}
-            </div>
-            <div class="user-details">
-                <span class="user-name">{{ auth()->user()->name }}</span>
-                <span class="user-status">Online</span>
-            </div>
-        </div>
-    </li>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        {{-- PROFIL ADMIN YANG BISA DIKLIK --}}
+        <a href="{{ route('profile') }}" style="text-decoration: none; color: inherit;">
+            <li class="nav-user" style="list-style: none; margin: 0; padding: 0;">
+                <div class="user-profile-nav" style="cursor: pointer; padding: 5px 10px; border-radius: 50px;">
+                    <div class="user-avatar">
+                        {{ substr(auth()->user()->name, 0, 1) }}
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">{{ auth()->user()->name }}</span>
+                        <span class="user-status">Online</span>
+                    </div>
+                </div>
+            </li>
+        </a>
 
-    <li>
-        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-            @csrf
-            <button type="submit" class="btn-logout-nav">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px; margin-right:5px;">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-                Keluar
-            </button>
-        </form>
-    </li>
+        {{-- TOMBOL KELUAR --}}
+        <li style="list-style: none;">
+            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                @csrf
+                <button type="submit" class="btn-logout-nav">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px; margin-right:5px;">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Keluar
+                </button>
+            </form>
+        </li>
+    </div>
 </nav>

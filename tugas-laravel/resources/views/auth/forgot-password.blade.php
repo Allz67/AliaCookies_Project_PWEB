@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/storefront.css') }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
 <body class="ac-auth-body">
@@ -20,7 +19,7 @@
     <div class="ac-centered-wrap">
 
         {{-- Brand --}}
-        <a href="{{ route('store.home') }}" class="ac-centered-brand">
+        <a href="{{ route('home') }}" class="ac-centered-brand">
             <div class="ac-panel__logo ac-panel__logo--sm">
                 <img src="{{ asset('images/aliacookies.png') }}" alt="Alia Cookies"
                      onerror="this.parentElement.innerHTML='🍪'">
@@ -41,7 +40,7 @@
             <div class="ac-centered-header">
                 <h1 class="ac-form-title">Lupa Password?</h1>
                 <p class="ac-form-sub">
-                    Tenang! Masukkan email akunmu dan kami akan mengirimkan link untuk membuat password baru.
+                    Masukkan email akunmu dan kami akan mengirimkan link untuk membuat password baru.
                 </p>
             </div>
 
