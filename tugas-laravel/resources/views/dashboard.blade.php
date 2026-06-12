@@ -36,6 +36,7 @@
     </div>
 
     <div class="stats-grid">
+        {{-- CARD PENDAPATAN --}}
         <div class="stat-card stat-green">
             <div class="stat-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -43,9 +44,11 @@
             <div class="stat-info">
                 <span class="stat-label">Total Pendapatan</span>
                 <span class="stat-value">{{ $stats['pendapatan'] }}</span>
-                <span class="stat-change up">↑ 12% dari bulan lalu</span>
+                <span class="stat-change" style="color: #666; opacity: 0.8;">Dari pesanan terbayar</span>
             </div>
         </div>
+
+        {{-- CARD PESANAN --}}
         <div class="stat-card stat-rose">
             <div class="stat-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -53,9 +56,11 @@
             <div class="stat-info">
                 <span class="stat-label">Total Pesanan</span>
                 <span class="stat-value">{{ $stats['pesanan'] }}</span>
-                <span class="stat-change up">↑ 8% dari bulan lalu</span>
+                <span class="stat-change" style="color: #666; opacity: 0.8;">Transaksi berhasil</span>
             </div>
         </div>
+
+        {{-- CARD PRODUK TERJUAL --}}
         <div class="stat-card stat-mocha">
             <div class="stat-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
@@ -63,38 +68,20 @@
             <div class="stat-info">
                 <span class="stat-label">Produk Terjual</span>
                 <span class="stat-value">{{ $stats['terjual'] }}</span>
-                <span class="stat-change up">↑ 5% dari bulan lalu</span>
+                <span class="stat-change" style="color: #666; opacity: 0.8;">Keping/Toples terjual</span>
             </div>
         </div>
+
+        {{-- CARD TOTAL PELANGGAN --}}
         <div class="stat-card stat-lavender">
             <div class="stat-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <div class="stat-info">
-                <span class="stat-label">Pelanggan Aktif</span>
+                <span class="stat-label">Total Pelanggan</span>
                 <span class="stat-value">{{ $stats['pelanggan'] }}</span>
-                <span class="stat-change up">↑ 3 pelanggan baru</span>
+                <span class="stat-change" style="color: #666; opacity: 0.8;">Akun terdaftar</span>
             </div>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="stat-card stat-mocha bg-white dark:bg-[#fff8f2] border border-transparent dark:border-[#e6ccb2] transition-colors duration-200" style="padding: 1.25rem;">
-                <div class="stat-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-label">Total Kunjungan</span>
-                    <span class="stat-value">{{ $visitCount }}</span>
-                    <span class="stat-change up" style="color: #4a7c51;">↑ Pkl {{ \Carbon\Carbon::parse($lastVisit)->format('H:i') }}</span>
-                </div>
-            </div>
-
-            <form action="{{ route('kunjungan.reset') }}" method="POST" style="margin: 0;">
-                @csrf
-                <button type="submit" style="width: 100%; font-size: 11px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--mocha); color: var(--mocha); background: transparent; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <strong>↺ Reset Data</strong>
-                    <span style="opacity: 0.8;">Awal: {{ \Carbon\Carbon::parse($firstVisit)->translatedFormat('d M') }}</span>
-                </button>
-            </form>
         </div>
     </div>
 
@@ -105,7 +92,6 @@
                 <h2 class="card-title">Grafik Penjualan Mingguan</h2>
                 <div class="chart-filter">
                     <button class="chip active" onclick="switchChart('mingguan', this)">Mingguan</button>
-                    <button class="chip" onclick="switchChart('harian', this)">Harian</button>
                 </div>
             </div>
             <div class="chart-container">
@@ -122,35 +108,28 @@
                     <div class="quick-dot dot-green"></div>
                     <div>
                         <span class="quick-label">Pesanan Selesai</span>
-                        <span class="quick-val">5 transaksi</span>
+                        <span class="quick-val">{{ $infoCepat['selesai'] }} transaksi</span>
                     </div>
                 </div>
                 <div class="quick-item">
                     <div class="quick-dot dot-yellow"></div>
                     <div>
                         <span class="quick-label">Sedang Diproses</span>
-                        <span class="quick-val">2 transaksi</span>
+                        <span class="quick-val">{{ $infoCepat['proses'] }} transaksi</span>
                     </div>
                 </div>
                 <div class="quick-item">
                     <div class="quick-dot dot-red"></div>
                     <div>
                         <span class="quick-label">Dibatalkan</span>
-                        <span class="quick-val">1 transaksi</span>
+                        <span class="quick-val">{{ $infoCepat['batal'] }} transaksi</span>
                     </div>
                 </div>
                 <div class="quick-item">
                     <div class="quick-dot dot-mocha"></div>
                     <div>
                         <span class="quick-label">Produk Terlaris</span>
-                        <span class="quick-val">Choco Chip Cookies</span>
-                    </div>
-                </div>
-                <div class="quick-item">
-                    <div class="quick-dot dot-lavender"></div>
-                    <div>
-                        <span class="quick-label">Pendapatan Hari Ini</span>
-                        <span class="quick-val">Rp 1.850.000</span>
+                        <span class="quick-val">{{ $infoCepat['produk_terlaris'] }}</span>
                     </div>
                 </div>
             </div>
@@ -232,10 +211,10 @@
     const salesChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: grafikLabels,
+            labels: grafikLabels, // Langsung memuat label Senin-Minggu
             datasets: [{
                 label: 'Pendapatan (Rp)',
-                data: grafikData,
+                data: grafikData, // Langsung memuat data mingguan
                 backgroundColor: 'rgba(167, 119, 97, 0.18)',
                 borderColor: '#a77761',
                 borderWidth: 2,
@@ -266,18 +245,6 @@
         }
     });
 
-    function switchChart(type, btn) {
-        document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (type === 'harian') {
-            salesChart.data.labels = ['08:00','10:00','12:00','14:00','16:00','18:00','20:00'];
-            salesChart.data.datasets[0].data = [120000,340000,580000,420000,760000,890000,640000];
-        } else {
-            salesChart.data.labels = grafikLabels;
-            salesChart.data.datasets[0].data = grafikData;
-        }
-        salesChart.update();
-    }
     // Fungsi Utama Live Search AJAX
     async function doLiveSearch(keyword) {
         const container = document.getElementById('table-container');

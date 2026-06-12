@@ -56,7 +56,7 @@
     </table>
 </div>
 
-<div style="padding: 20px; border-top: 1px solid var(--cream-dark); display: flex; justify-content: flex-end;">
+<div class="trx-pagination" style="width: 100%; display: flex; justify-content: center; margin-top: 20px;">
     {{ $products->links() }}
 </div>
 

@@ -1,44 +1,60 @@
-@extends('layouts.app')
+@extends(Auth::user()->role == 'admin' ? 'layouts.app' : 'layouts.store')
 
 @section('title', 'Pengaturan Preferensi')
 
 @section('content')
-<div class="page-wrapper" style="max-w: 600px; margin: 40px auto; padding: 0 20px;">
-    <div class="page-header">
-        <div>
-            <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
-            <h1 class="page-title">Preferensi Tampilan</h1>
-            <p class="page-sub">Selamat datang, <strong>{{ auth()->user()->name }}</strong>. Sesuaikan kenyamanan tema dan ukuran huruf panel admin Anda.</p>
-        </div>
-    </div>
 
-    <div class="card" style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(167, 119, 97, 0.08); border: 1px solid #f5ebe0;">
+
+<div class="page-wrapper">
+
+    {{-- HEADER KONDISIONAL --}}
+    @if(Auth::user()->role == 'admin')
+        {{-- HEADER ADMIN (Menggunakan CSS Bawaanmu) --}}
+        <div class="page-header" style="margin-bottom: 30px;">
+            <div>
+                <p class="greeting" id="greeting">Halo, Selamat Pagi 👋</p>
+                <h1 class="page-title">Preferensi <span class="highlight">Tampilan</span></h1>
+                <p class="page-sub">Selamat datang, <strong>{{ auth()->user()->name }}</strong>. Sesuaikan kenyamanan tema dan ukuran huruf panel admin Anda.</p>
+            </div>
+            </div>
+    @else
+        {{-- HEADER CUSTOMER --}}
+        <div style="margin-bottom: 40px; text-align: center;">
+            <h1 class="pref-title-cust" style="font-family: 'Playfair Display', serif; font-size: 2.4rem; color: #3d2b1f; margin-bottom: 10px;">
+                Preferensi <em style="color: #a77761; font-style: italic;">Tampilan</em>
+            </h1>
+            <p class="pref-sub-cust" style="color: #9c8275; font-size: 1rem;">
+                Sesuaikan kenyamanan tema dan ukuran huruf untuk pengalaman belanjamu.
+            </p>
+        </div>
+    @endif
+
+    {{-- KOTAK FORM --}}
+    <div class="pref-card">
         <form id="preferencesForm" style="display: flex; flex-direction: column; gap: 24px;">
             @csrf
 
-            <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-                <label for="theme" style="font-weight: 500; font-size: 0.95rem; color: #3d2b1f;">Pilihan Tema Global</label>
-                <select name="theme" id="theme" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #f5ebe0; background-color: #faf5ef; font-family: 'DM Sans', sans-serif; color: #3d2b1f; outline: none;">
+            <div>
+                <label for="theme" class="pref-label">Pilihan Tema Global</label>
+                <select name="theme" id="theme" class="pref-select">
                     <option value="light" {{ request()->cookie('theme') == 'light' ? 'selected' : '' }}>Terang (Light Mode)</option>
                     <option value="dark" {{ request()->cookie('theme') == 'dark' ? 'selected' : '' }}>Gelap (Dark Mode)</option>
                     <option value="system" {{ request()->cookie('theme') == 'system' || !request()->cookie('theme') ? 'selected' : '' }}>Ikuti Sistem Perangkat</option>
                 </select>
             </div>
 
-            <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-                <label for="font_size" style="font-weight: 500; font-size: 0.95rem; color: #3d2b1f;">Ukuran Huruf Aplikasi</label>
-                <select name="font_size" id="font_size" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #f5ebe0; background-color: #faf5ef; font-family: 'DM Sans', sans-serif; color: #3d2b1f; outline: none;">
+            <div>
+                <label for="font_size" class="pref-label">Ukuran Huruf Aplikasi</label>
+                <select name="font_size" id="font_size" class="pref-select">
                     <option value="sm" {{ request()->cookie('font_size') == 'sm' ? 'selected' : '' }}>Kecil (Small)</option>
                     <option value="md" {{ request()->cookie('font_size') == 'md' || !request()->cookie('font_size') ? 'selected' : '' }}>Normal (Medium)</option>
                     <option value="lg" {{ request()->cookie('font_size') == 'lg' ? 'selected' : '' }}>Besar (Large)</option>
                 </select>
             </div>
 
-            <div style="margin-top: 10px;">
-                <button type="submit" class="btn-detail" style="width: 100%; padding: 12px; background-color: #a77761; color: white; border: none; border-radius: 8px; font-weight: 500; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
-                    Simpan Pengaturan Preferensi
-                </button>
-            </div>
+            <button type="submit" class="pref-btn">
+                Simpan Pengaturan Preferensi
+            </button>
         </form>
     </div>
 </div>
@@ -46,18 +62,30 @@
 
 @push('scripts')
 <script>
+    function syncNavbarThemeText() {
+        const moonIcon = document.getElementById('moon-icon');
+        const sunIcon = document.getElementById('sun-icon');
+        const themeText = document.getElementById('theme-text');
+
+        if (document.documentElement.classList.contains('dark')) {
+            if (moonIcon) moonIcon.style.display = 'none';
+            if (sunIcon) sunIcon.style.display = 'inline-block';
+            if (themeText) themeText.innerText = 'Mode Terang';
+        } else {
+            if (moonIcon) moonIcon.style.display = 'inline-block';
+            if (sunIcon) sunIcon.style.display = 'none';
+            if (themeText) themeText.innerText = 'Mode Gelap';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', syncNavbarThemeText);
+
     const themeSelect = document.getElementById('theme');
     if (themeSelect) {
         themeSelect.addEventListener('change', function() {
             const selectedValue = this.value;
-            const moonIcon = document.getElementById('moon-icon');
-            const sunIcon = document.getElementById('sun-icon');
-            const themeText = document.getElementById('theme-text');
-
-            // Cek preferensi sistem jika user memilih opsi 'system'
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            // Tentukan apakah harus mengaktifkan mode gelap atau tidak
             let shouldBeDark = false;
             if (selectedValue === 'dark') {
                 shouldBeDark = true;
@@ -65,47 +93,33 @@
                 shouldBeDark = systemPrefersDark;
             }
 
-            // 1. Ubah class 'dark' di tag HTML root secara langsung
             if (shouldBeDark) {
                 document.documentElement.classList.add('dark');
-                if (moonIcon) moonIcon.style.display = 'none';
-                if (sunIcon) sunIcon.style.display = 'inline-block';
-                if (themeText) themeText.innerText = 'Mode Terang';
             } else {
                 document.documentElement.classList.remove('dark');
-                if (moonIcon) moonIcon.style.display = 'inline-block';
-                if (sunIcon) sunIcon.style.display = 'none';
-                if (themeText) themeText.innerText = 'Mode Gelap';
             }
+
+            syncNavbarThemeText();
         });
     }
 
     document.getElementById('preferencesForm').addEventListener('submit', async function(e) {
-        // 1. Hentikan aksi bawaan form HTML agar tidak refresh halaman
         e.preventDefault();
-
-        // 2. Ambil semua data inputan dari Form (theme dan font_size)
         const formData = new FormData(this);
 
         try {
-            // 3. Kirim data secara asynchronous (Fetch API) dengan metode POST
             const response = await fetch("{{ route('preferensi.store') }}", {
                 method: "POST",
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': formData.get('_token') // Ambil token CSRF untuk keamanan Laravel
+                    'X-CSRF-TOKEN': formData.get('_token')
                 },
                 body: formData
             });
 
-            // 4. Ubah respon mentah dari Laravel menjadi format JSON digital
             const result = await response.json();
-
-            // 5. Jika response sukses, tampilkan notifikasi dan muat ulang halaman
             if (result.status === 'success') {
-                alert(result.message);
-
-                // Reload halaman agar cookie baru langsung dibaca oleh skrip anti-flash di <head>
+                alert('Berhasil! Preferensi Anda telah disimpan.');
                 window.location.reload();
             }
         } catch (error) {

@@ -18,6 +18,7 @@ class Product extends Model
         'satuan',
         'kategori',
         'harga',
+        'deskripsi',
         'is_active',
         'foto'
     ];

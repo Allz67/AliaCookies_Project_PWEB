@@ -8,11 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CekAdmin
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request):
-     */
     public function handle(Request $request, Closure $next): Response
     {
         // Cek apakah user sudah login DAN memiliki role 'admin'
@@ -20,7 +15,7 @@ class CekAdmin
             return $next($request);
         }
 
-        // Jika bukan admin, arahkan kembali ke dashboard dengan pesan peringatan
-        return redirect()->route('dashboard')->with('error', 'Maaf, Anda tidak memiliki akses ke halaman tersebut.');
+        // PERBAIKAN: Jika customer nyasar, lempar ke beranda toko ('home'), JANGAN ke 'dashboard' lagi!
+        return redirect()->route('home')->with('error', 'Maaf, Anda tidak memiliki akses ke halaman Admin.');
     }
 }

@@ -324,7 +324,7 @@
                 requestAnimationFrame(tick);
             } else {
                 setTimeout(() => {
-                    window.location.href = "{{ route('login') }}";
+                    window.location.href = "{{ route('home') }}";
                 }, 800);
             }
         }

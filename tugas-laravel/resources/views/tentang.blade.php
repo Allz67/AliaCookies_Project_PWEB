@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.store')
 
 @section('title', 'Tentang Kami')
 
@@ -7,15 +7,7 @@
 @php
     $username = session('username', 'Admin');
 
-    $milestones = [
-        ['tahun' => '2020', 'judul' => 'Awal Berdiri',     'desc' => 'Alia Cookies lahir dari dapur rumahan di Jember dengan semangat berbagi cita rasa terbaik.'],
-        ['tahun' => '2021', 'judul' => 'Produk Pertama',   'desc' => 'Meluncurkan Choco Chip Cookies sebagai produk andalan yang langsung mendapat sambutan hangat.'],
-        ['tahun' => '2022', 'judul' => 'Ekspansi Hampers', 'desc' => 'Memperluas lini produk ke hampers premium untuk momen spesial seperti Lebaran dan Natal.'],
-        ['tahun' => '2023', 'judul' => '500+ Pelanggan',   'desc' => 'Mencapai lebih dari 500 pelanggan setia dan mulai melayani pengiriman ke seluruh Indonesia.'],
-        ['tahun' => '2024', 'judul' => 'Sistem Digital',   'desc' => 'Meluncurkan panel admin digital untuk manajemen stok dan transaksi yang lebih efisien.'],
-        ['tahun' => '2025', 'judul' => 'Terus Berkembang', 'desc' => 'Terus berinovasi dengan varian baru dan layanan yang semakin personal untuk pelanggan.'],
-    ];
-
+    // Data ini tetap kita biarkan di sini karena berhubungan langsung dengan warna dan ikon UI (CSS)
     $keunggulan = [
         ['icon' => '🍪', 'judul' => 'Resep Rahasia Keluarga', 'desc' => 'Setiap cookies dibuat dari resep turun-temurun yang telah teruji dan menghasilkan cita rasa yang tak tertandingi.'],
         ['icon' => '🌿', 'judul' => 'Bahan Premium Pilihan',  'desc' => 'Kami hanya menggunakan bahan-bahan berkualitas tinggi, dipilih dengan teliti untuk hasil terbaik.'],
@@ -30,17 +22,11 @@
         'Menjaga kepercayaan pelanggan melalui kualitas yang konsisten',
     ];
 
-    $produkUnggulan = [
+    // Menggunakan variabel baru agar tidak bentrok dengan controller, menjaga class warna 'bg' tetap jalan
+    $produkUnggulanUI = [
         ['nama' => 'Choco Chip Cookies',    'ket' => 'Cookies klasik dengan lelehan cokelat yang sempurna.',  'badge' => 'Best Seller', 'harga' => 'Rp 45.000',  'bg' => 'pu-mocha'],
         ['nama' => 'Almond Butter Cookies', 'ket' => 'Perpaduan almond premium dan butter pilihan yang kaya.', 'badge' => 'Favorit',     'harga' => 'Rp 55.000',  'bg' => 'pu-rose'],
         ['nama' => 'Premium Gift Box',      'ket' => 'Hampers eksklusif untuk hadiah momen paling spesial.',  'badge' => 'Premium',     'harga' => 'Rp 350.000', 'bg' => 'pu-lavender'],
-    ];
-
-    $kontaks = [
-        ['icon' => '📧', 'label' => 'Email',     'val' => 'aliacookies@gmail.com',         'sub' => 'Balasan dalam 1×24 jam'],
-        ['icon' => '📸', 'label' => 'Instagram', 'val' => '@aliacookies.jbr',              'sub' => 'Follow untuk update produk'],
-        ['icon' => '💬', 'label' => 'WhatsApp',  'val' => '+62 856-4856-9562',             'sub' => 'Chat langsung dengan kami'],
-        ['icon' => '📍', 'label' => 'Lokasi',    'val' => 'Jember, Jawa Timur, Indonesia', 'sub' => 'Buka setiap hari'],
     ];
 @endphp
 
@@ -56,11 +42,12 @@
                 <h1 class="tentang-hero-title">
                     Tentang <em>Alia Cookies</em>
                 </h1>
+
+                {{-- MENGAMBIL CERITA DARI DATABASE --}}
                 <p class="tentang-hero-desc">
-                    Alia Cookies adalah toko cookies handmade premium berbasis di Jember, Indonesia.
-                    Kami hadir untuk menghadirkan momen manis yang tak terlupakan — dari camilan harian
-                    hingga hampers eksklusif untuk momen-momen paling spesial dalam hidup Anda.
+                    {{ $cerita }}
                 </p>
+
                 <div class="tentang-hero-stats">
                     <div class="t-stat"><strong>5+</strong><span>Tahun Berpengalaman</span></div>
                     <div class="t-stat-div"></div>
@@ -132,6 +119,7 @@
             <span class="t-label">Dari dapur rumahan ke ribuan pelanggan</span>
         </div>
         <div class="timeline">
+            {{-- MENGAMBIL DATA MILESTONES DARI DATABASE --}}
             @foreach($milestones as $i => $ms)
             <div class="timeline-item {{ $i % 2 === 0 ? 'tl-left' : 'tl-right' }}">
                 <div class="tl-year">{{ $ms['tahun'] }}</div>
@@ -152,7 +140,7 @@
             <span class="t-label">Yang paling dicintai pelanggan kami</span>
         </div>
         <div class="produk-unggulan-grid">
-            @foreach($produkUnggulan as $pu)
+            @foreach($produkUnggulanUI as $pu)
             <div class="pu-card {{ $pu['bg'] }}">
                 <span class="pu-badge">{{ $pu['badge'] }}</span>
                 <div class="pu-img">
@@ -177,6 +165,7 @@
             <span class="t-label">Kami senang mendengar dari Anda</span>
         </div>
         <div class="kontak-grid">
+            {{-- MENGAMBIL DATA KONTAK DARI DATABASE --}}
             @foreach($kontaks as $k)
             <div class="kontak-item">
                 <div class="kontak-icon">{{ $k['icon'] }}</div>

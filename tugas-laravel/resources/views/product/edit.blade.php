@@ -49,6 +49,12 @@
                             <option value="Pcs" {{ old('satuan', $product->satuan) == 'Pcs' ? 'selected' : '' }}>Pcs (Eceran)</option>
                         </select>
                     </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: bold; font-size: 0.75rem; color: #5D4037; text-transform: uppercase; margin-bottom: 8px;">Deskripsi Produk</label>
+                        <textarea name="deskripsi" class="search-input" style="width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #EBD9C8; min-height: 120px; font-family: inherit; resize: vertical;" placeholder="Tuliskan komposisi, rasa, atau detail produk di sini...">{{ old('deskripsi', $product->deskripsi) }}</textarea>
+                        @error('deskripsi') <small style="color: #A0522D;">{{ $message }}</small> @enderror
+                    </div>
                 </div>
 
                 <div class="upload-box"> <div id="preview-container" style="{{ $product->foto ? 'display: block;' : 'display: none;' }} width: 100%; text-align: center;">

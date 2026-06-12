@@ -8,13 +8,25 @@ class Transaction extends Model
 {
     protected $table = 'transaksis';
 
-    protected $fillable = ['id', 'user_id', 'status_pesanan', 'tanggal_transaksi'];
+    protected $fillable = [
+        'id',
+        'user_id',
+        'total_harga',
+        'snap_token',
+        'payment_status',
+        'status_pesanan',
+        'shipping_address',
+        'shipping_cost',
+        'courier',
+        'resi_number',
+        'tanggal_transaksi',
+    ];
 
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
-    // AMAN KAN BARIS INI: Relasi ke tabel users untuk menarik nama pelanggan
+    
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

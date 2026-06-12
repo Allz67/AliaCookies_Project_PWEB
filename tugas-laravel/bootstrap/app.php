@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'font_size',
         ]);
 
+        // 🚨 TAMBAHKAN INI UNTUK MIDTRANS 🚨
+        // Izinkan server Midtrans mengirim laporan tanpa token CSRF
+        $middleware->validateCsrfTokens(except: [
+            '/midtrans-callback'
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\CekAdmin::class,
         ]);
@@ -24,3 +30,4 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+

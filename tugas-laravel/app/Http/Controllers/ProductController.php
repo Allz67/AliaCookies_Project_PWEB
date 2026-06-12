@@ -61,7 +61,21 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $prefix = ($request->kategori == 'Cookies') ? 'CK' : 'HM';
-        $count = Product::where('kategori', $request->kategori)->count() + 1;
+
+        $produkTerakhir = Product::withTrashed()
+                                 ->where('kategori', $request->kategori)
+                                 ->latest('id')
+                                 ->first();
+
+        // Ambil angka dari kode terakhir, lalu tambah 1
+        if ($produkTerakhir) {
+            // Memotong huruf depan (misal "HM-003" diambil angka "3"-nya saja)
+            $angkaTerakhir = (int) substr($produkTerakhir->kode, 3);
+            $count = $angkaTerakhir + 1;
+        } else {
+            $count = 1;
+        }
+
         $generatedKode = $prefix . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
         $request->validate([
@@ -70,6 +84,7 @@ class ProductController extends Controller
             'satuan'    => 'required',
             'kategori'  => 'required|in:Cookies,Hampers',
             'harga'     => 'required|numeric|min:5000|max:100000000',
+            'deskripsi' => 'nullable|string',
             'foto'      => 'nullable|image|mimes:jpg,png,jpeg|max:2048'
         ]);
 

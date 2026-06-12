@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-use Carbon\Carbon; 
+use Carbon\Carbon;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -14,15 +15,6 @@ class DashboardController extends Controller
         if (!session()->has('success')) {
             session()->flash('success', 'Selamat datang kembali di Panel Admin Alia Cookies!');
         }
-
-        $visitCount = $request->session()->get('visit_count', 0) + 1;
-        $request->session()->put('visit_count', $visitCount);
-
-        if (!$request->session()->has('first_visit')) {
-            $request->session()->put('first_visit', now());
-        }
-
-        $request->session()->put('last_visit', now());
 
         $query = Transaction::with(['user', 'items']);
 
@@ -45,28 +37,77 @@ class DashboardController extends Controller
             return view('partials.transaction_table', compact('transactions'))->render();
         }
 
+        $allTransactions = Transaction::with('items')->get();
+        $paidTransactions = $allTransactions->where('payment_status', 'Paid');
+
+        // ==========================================================
+        // 2. STATISTIK KOTAK ATAS
+        // ==========================================================
+        $totalPendapatan = $paidTransactions->sum('total_harga');
+        $totalPesanan    = $paidTransactions->count();
+        $totalTerjual    = $paidTransactions->sum(function ($trx) {
+            return $trx->items->sum('jumlah');
+        });
+        $totalPelanggan  = \App\Models\User::where('role', 'customer')->count();
+
         $stats = [
-            'pendapatan' => 'Rp 12.480.000',
-            'pesanan'    => 148,
-            'terjual'    => 342,
-            'pelanggan'  => 87,
+            'pendapatan' => 'Rp ' . number_format($totalPendapatan, 0, ',', '.'),
+            'pesanan'    => $totalPesanan,
+            'terjual'    => $totalTerjual,
+            'pelanggan'  => $totalPelanggan,
         ];
 
+        // ==========================================================
+        // 3. INFO CEPAT DINAMIS
+        // ==========================================================
+        // Mencari produk terlaris dari pesanan yang sudah dibayar
+        $semuaItemTerjual = $paidTransactions->pluck('items')->flatten();
+        $produkTerlaris = $semuaItemTerjual->groupBy('nama_produk')->map(function ($grup) {
+            return $grup->sum('jumlah');
+        })->sortDesc()->keys()->first();
+
+        // Menghitung pendapatan khusus hari ini
+        $pendapatanHariIni = $paidTransactions->filter(function($trx) {
+            return \Carbon\Carbon::parse($trx->created_at)->isToday();
+        })->sum('total_harga');
+
+        $infoCepat = [
+            'selesai'             => $allTransactions->where('status_pesanan', 'Selesai')->count(),
+            'proses'              => $allTransactions->where('status_pesanan', 'Proses')->count(),
+            'batal'               => $allTransactions->where('status_pesanan', 'Batal')->count(),
+            'produk_terlaris'     => $produkTerlaris ?? 'Belum ada',
+        ];
+
+        // ==========================================================
+        // 4. GRAFIK DINAMIS (MINGGUAN)
+        // ==========================================================
+        $mingguanData = [];
+        $mingguanLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+        $awalMinggu = \Carbon\Carbon::now()->startOfWeek();
+
+        // Looping untuk mencari pendapatan hari Senin - Minggu khusus minggu ini
+        for ($i = 0; $i < 7; $i++) {
+            $tanggalCek = $awalMinggu->copy()->addDays($i)->format('Y-m-d');
+            $mingguanData[] = $paidTransactions->filter(function($trx) use ($tanggalCek) {
+                return \Carbon\Carbon::parse($trx->created_at)->format('Y-m-d') === $tanggalCek;
+            })->sum('total_harga');
+        }
+
+        // Susun array grafik menjadi lebih sederhana tanpa opsi harian
         $grafik = [
-            'labels' => ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-            'data'   => [1200000, 980000, 1450000, 870000, 1600000, 2100000, 1850000],
+            'labels' => $mingguanLabels,
+            'data'   => $mingguanData,
         ];
 
+        // ==========================================================
+        // RETURN VIEW (Pastikan infoCepat ikut dikirim)
+        // ==========================================================
         return view('dashboard', [
             'username'     => Auth::user()->name,
             'stats'        => $stats,
+            'infoCepat'    => $infoCepat, // Variabel baru dikirim ke view
             'transactions' => $transactions,
             'grafik'       => $grafik,
-
-            // JANGAN LUPA: Lempar juga variabel session-nya ke view
-            'visitCount'   => $visitCount,
-            'firstVisit'   => $request->session()->get('first_visit'),
-            'lastVisit'    => $request->session()->get('last_visit'),
         ]);
     }
 
