@@ -160,31 +160,46 @@ class CheckoutController extends Controller
     // =========================================================================
     public function callback(Request $request)
     {
+        \Log::info('[Midtrans Callback] Payload:', $request->all());
+
         $serverKey      = env('MIDTRANS_SERVER_KEY');
-        $localSignature = hash('sha512', $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+        $localSignature = hash('sha512',
+            $request->order_id .
+            $request->status_code .
+            $request->gross_amount .
+            $serverKey
+        );
 
         if ($request->signature_key !== $localSignature) {
+            \Log::warning('[Midtrans Callback] Signature tidak valid!');
             return response()->json(['message' => 'Signature tidak valid'], 403);
         }
 
         $transaksi = Transaction::query()->find($request->order_id);
-        if (! $transaksi) return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        if (! $transaksi) {
+            return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        }
 
         $status = $request->transaction_status;
+        \Log::info('[Midtrans Callback] Status: ' . $status);
+
         if (in_array($status, ['settlement', 'capture'])) {
-            // Jika dibayar, payment status berubah dan pesanan otomatis masuk ke Proses
             $transaksi->update([
-                'payment_status' => 'Dibayar',
-                'status_pesanan' => 'Proses'
+                'payment_status' => 'Paid',
+                'status_pesanan' => 'Proses',
             ]);
         } elseif ($status === 'pending') {
-            $transaksi->update(['payment_status' => 'Menunggu Pembayaran']);
+            $transaksi->update([
+                'payment_status' => 'Unpaid',
+            ]);
         } elseif (in_array($status, ['deny', 'expire', 'cancel'])) {
             $transaksi->update([
-                'payment_status' => 'Gagal',
-                'status_pesanan' => 'Dibatalkan'
+                'payment_status' => 'Failed',
+                'status_pesanan' => 'Dibatalkan',
             ]);
         }
+
+        return response()->json(['message' => 'OK']);
     }
 
     // =========================================================================
@@ -241,7 +256,7 @@ class CheckoutController extends Controller
         $orderStatus   = strtolower($transaksi->status_pesanan);
 
         // Jika payment sudah 'Paid' / 'Dibayar', tapi status pesanan masih nyangkut di 'Unpaid'
-        if (in_array($paymentStatus, ['paid', 'dibayar', 'settlement']) && $orderStatus === 'unpaid') {
+        if (in_array($paymentStatus, ['Paid', 'Dibayar', 'Settlement']) && $orderStatus === 'Unpaid') {
             $transaksi->status_pesanan = 'Proses';
             $transaksi->save();
         }
