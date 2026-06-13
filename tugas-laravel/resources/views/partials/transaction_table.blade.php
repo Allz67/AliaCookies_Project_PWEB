@@ -34,5 +34,5 @@
 </div>
 
 <div class="pagination-wrapper" style="margin-top: 20px; display: flex; justify-content: flex-end;">
-    {{ $transactions->links() }}
+    {{ $transactions->appends(request()->query())->links() }}
 </div>

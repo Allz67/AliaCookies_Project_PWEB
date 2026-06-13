@@ -159,7 +159,6 @@
     async function doProductSearch(keyword) {
         const container = document.getElementById('product-table-container');
         try {
-            // Kunci AJAX: Arahkan URL fetch langsung ke rute /pengelolaan secara tertulis
             const response = await fetch(`/pengelolaan?keyword=${encodeURIComponent(keyword)}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
@@ -172,13 +171,13 @@
 
     // 2. Interseptor Pagination AJAX untuk Produk
     document.addEventListener('click', async function(e) {
-        const paginationLink = e.target.closest('.pagination a');
+        const paginationLink = e.target.closest('.pagination a, .page-link');
+
         if (paginationLink) {
-            // Cek apakah link pagination ini berada di dalam container produk
             const isProductPagination = e.target.closest('#product-table-container');
 
             if (isProductPagination) {
-                e.preventDefault(); // Cegah halaman reload utuh
+                e.preventDefault();
 
                 const url = paginationLink.href;
                 const keyword = document.getElementById('searchProduct').value;
@@ -186,22 +185,41 @@
 
                 try {
                     const targetUrl = new URL(url);
-                    if(keyword) targetUrl.searchParams.set('keyword', keyword);
 
-                    const response = await fetch(targetUrl, {
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    if (window.location.protocol === 'https:') {
+                        targetUrl.protocol = 'https:';
+                    }
+
+                    if(keyword) {
+                        targetUrl.searchParams.set('keyword', keyword);
+                    }
+
+                    container.style.opacity = '0.5';
+
+                    const response = await fetch(targetUrl.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
                     });
+
+                    if (!response.ok) throw new Error('Gagal menghubungi server');
+
                     const html = await response.text();
                     container.innerHTML = html;
+                    container.style.opacity = '1';
+
                 } catch (error) {
                     console.error("Gagal memuat halaman pagination produk:", error);
+                    container.style.opacity = '1';
+
+                    window.location.href = url;
                 }
             }
         }
     });
 
     function bukaModalDetail(button) {
-        // 1. Ambil semua data dari elemen tombol yang diklik
         const kode = button.getAttribute('data-kode');
         const nama = button.getAttribute('data-nama');
         const kategori = button.getAttribute('data-kategori');
@@ -211,8 +229,6 @@
         const status = button.getAttribute('data-status');
         const foto = button.getAttribute('data-foto');
 
-        // 2. Suntikkan data tersebut ke ID elemen modal aslimu
-        // (Silakan sesuaikan ID elemen modal di bawah ini dengan ID modal yang kamu buat di show.blade.php ya!)
         if(document.getElementById('modalKode')) document.getElementById('modalKode').innerText = kode;
         if(document.getElementById('modalNama')) document.getElementById('modalNama').innerText = nama;
         if(document.getElementById('modalKategori')) document.getElementById('modalKategori').innerText = kategori;
@@ -223,13 +239,10 @@
         const elementsFoto = document.getElementById('modalFoto');
         if(elementsFoto) elementsFoto.src = foto;
 
-        // 3. Panggil fungsi atau tampilkan modal bawaan aplikasimu
-        // Contoh jika menggunakan fungsi showDetail bawaanmu:
         if (typeof showDetail === "function") {
             showDetail(kode, nama, kategori, stok, satuan, harga, status, foto);
         } else {
-            // Jika modalmu menggunakan class active/show biasa untuk muncul:
-            const modalElement = document.getElementById('detailModal'); // sesuaikan ID modalmu
+            const modalElement = document.getElementById('detailModal');
             if(modalElement) modalElement.classList.add('show');
         }
     }

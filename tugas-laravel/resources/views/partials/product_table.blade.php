@@ -57,7 +57,7 @@
 </div>
 
 <div class="trx-pagination" style="width: 100%; display: flex; justify-content: center; margin-top: 20px;">
-    {{ $products->links() }}
+    {{ $products->appends(request()->query())->links() }}
 </div>
 
 <style>
@@ -65,25 +65,25 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background-color: #fff1f2; /* Merah rose sangat lembut */
-        color: #e11d48; /* Warna teks merah elegan */
+        background-color: #fff1f2;
+        color: #e11d48;
         border: 1px solid #ffe4e6;
         padding: 8px 14px;
         font-family: 'DM Sans', sans-serif;
         font-size: 13px;
         font-weight: 500;
-        border-radius: 8px; /* Lengkungan melingkar manis seperti tombol Detail */
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease-in-out;
         box-shadow: 0 2px 4px rgba(225, 29, 72, 0.04);
     }
 
     .btn-hapus-premium:hover {
-        background-color: #e11d48; /* Berubah jadi merah penuh saat disentuh kursor */
-        color: #ffffff; /* Teks berubah jadi putih bersih */
+        background-color: #e11d48;
+        color: #ffffff;
         border-color: #e11d48;
         box-shadow: 0 4px 8px rgba(225, 29, 72, 0.2);
-        transform: translateY(-1px); /* Efek sedikit terangkat */
+        transform: translateY(-1px);
     }
 
     .btn-hapus-premium:active {
