@@ -49,7 +49,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" style="text-align: center; color: var(--text-light); padding: 20px;">Produk tidak ditemukan 😢</td>
+                <td colspan="8" style="text-align: center; color: var(--text-light); padding: 20px;">Produk tidak ditemukan</td>
             </tr>
             @endforelse
         </tbody>

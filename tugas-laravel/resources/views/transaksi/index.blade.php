@@ -32,9 +32,7 @@
 
         @if($transaksis->isEmpty())
             <div class="trx-empty">
-                <div class="trx-empty__icon">🍪</div>
                 <p class="trx-empty__title">Belum ada daftar transaksi.</p>
-                <p class="trx-empty__sub">Kamu belum pernah melakukan pemesanan. Yuk, mulai belanja!</p>
             </div>
 
         @else

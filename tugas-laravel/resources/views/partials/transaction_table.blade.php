@@ -26,7 +26,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-light); padding: 20px;">Data transaksi tidak ditemukan 😢</td>
+                <td colspan="6" style="text-align: center; color: var(--text-light); padding: 20px;">Data transaksi tidak ditemukan</td>
             </tr>
             @endforelse
         </tbody>
