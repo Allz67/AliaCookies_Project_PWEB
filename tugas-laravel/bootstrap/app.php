@@ -11,16 +11,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // KUNCI UTAMA: Bebaskan cookie preferensi dari enkripsi agar bisa dibaca JavaScript
         $middleware->encryptCookies(except: [
             'theme',
             'font_size',
         ]);
 
-        // 🚨 TAMBAHKAN INI UNTUK MIDTRANS 🚨
-        // Izinkan server Midtrans mengirim laporan tanpa token CSRF
         $middleware->validateCsrfTokens(except: [
-            '/midtrans-callback'
+            '/midtrans-callback',
         ]);
 
         $middleware->alias([
