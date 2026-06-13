@@ -294,19 +294,27 @@
                             {{-- STATE 2: PROSES / DIKIRIM (Menunggu Paket Datang / Diambil) --}}
                             @if(in_array(strtolower($transaksi->status_pesanan), ['proses', 'dikirim']))
 
-                                {{-- LOGIKA BARU: Jika Dikirim, ATAU jika Pickup sedang Diproses --}}
-                                @if(strtolower($transaksi->status_pesanan) === 'dikirim' || (strtolower($transaksi->status_pesanan) === 'proses' && strtolower($transaksi->courier) === 'pickup'))
-
+                                @if(strtolower($transaksi->status_pesanan) === 'dikirim')
+                                    {{-- PENGIRIMAN BIASA: Kustomer bisa klik Pesanan Diterima --}}
                                     <form action="{{ route('transaksi.updateResi', $transaksi->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="status_pesanan" value="Selesai">
                                         <button type="submit" class="btn-bayar" style="width: 100%; background-color: #15803d; border-bottom: 4px solid #166534; margin-bottom: 0;">
-                                            {{ strtolower($transaksi->courier) === 'pickup' ? 'Saya Telah Mengambil Pesanan (Selesai)' : 'Pesanan Diterima (Selesai)' }}
+                                            Pesanan Diterima (Selesai)
                                         </button>
                                     </form>
 
+                                @elseif(strtolower($transaksi->status_pesanan) === 'proses' && strtolower($transaksi->courier) === 'pickup')
+                                    {{-- KHUSUS PICKUP: Kustomer tidak bisa klik, hanya info --}}
+                                    <button type="button" class="btn-bayar" style="width: 100%; background-color: #cccccc; color: #777777; border-bottom: 4px solid #aaaaaa; cursor: not-allowed; margin-bottom: 0;" disabled>
+                                        Menunggu Diambil
+                                    </button>
+                                    <div style="text-align: center; font-size: 12px; color: #8a7a63; margin-top: 8px;">
+                                        Admin akan menyelesaikan pesanan ini.
+                                    </div>
+
                                 @else
-                                    {{-- Tombol Mati Abu-abu (Paket Delivery masih diproses admin) --}}
+                                    {{-- KHUSUS PENGIRIMAN: Tombol mati karena paket masih diproses admin --}}
                                     <button type="button" class="btn-bayar" style="width: 100%; background-color: #cccccc; color: #777777; border-bottom: 4px solid #aaaaaa; cursor: not-allowed; margin-bottom: 0;" disabled>
                                         Pesanan Diterima
                                     </button>
