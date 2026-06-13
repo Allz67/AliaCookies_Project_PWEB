@@ -140,21 +140,34 @@
             <span class="t-label">Yang paling dicintai pelanggan kami</span>
         </div>
         <div class="produk-unggulan-grid">
-            @foreach($produkUnggulanUI as $pu)
-            <div class="pu-card {{ $pu['bg'] }}">
-                <span class="pu-badge">{{ $pu['badge'] }}</span>
+
+            {{-- Siapkan urutan warna UI dan nama lencana --}}
+            @php
+                $bgColors = ['pu-mocha', 'pu-rose', 'pu-lavender'];
+                $badges = ['Paling Laris', 'Terfavorit', 'Banyak Disukai'];
+            @endphp
+
+            @foreach($produkUnggulanData as $index => $pu)
+            <div class="pu-card {{ $bgColors[$index % 3] }}">
+                <span class="pu-badge">{{ $badges[$index] ?? 'Terpopuler' }}</span>
                 <div class="pu-img">
-                    <img src="{{ asset('images/cookies.png') }}" alt="{{ $pu['nama'] }}"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-                    <div style="display:none; font-size:3.5rem; text-align:center;">🍪</div>
+                    {{-- Cek apakah produk punya foto asli di database --}}
+                    @if($pu->foto)
+                        <img src="{{ asset('storage/' . $pu->foto) }}" alt="{{ $pu->nama }}" style="width:100%; height:auto; border-radius:8px;">
+                    @else
+                        <img src="{{ asset('images/cookies.png') }}" alt="{{ $pu->nama }}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <div style="display:none; font-size:3.5rem; text-align:center;">🍪</div>
+                    @endif
                 </div>
                 <div class="pu-info">
-                    <h3>{{ $pu['nama'] }}</h3>
-                    <p>{{ $pu['ket'] }}</p>
-                    <strong>{{ $pu['harga'] }} / box</strong>
+                    <h3>{{ $pu->nama }}</h3>
+                    <p>{{ \Illuminate\Support\Str::limit($pu->deskripsi ?? 'Kue spesial premium buatan tangan kami dengan rasa yang autentik.', 60) }}</p>
+                    <strong>Rp {{ number_format($pu->harga, 0, ',', '.') }} / {{ $pu->satuan ?? 'box' }}</strong>
                 </div>
             </div>
             @endforeach
+
         </div>
     </div>
 

@@ -26,23 +26,47 @@ class PageController extends Controller
 
     public function tentang()
     {
-        $ceritaDb = Setting::query()->where('key', 'tentang_cerita')->first();
+        $ceritaDb = \App\Models\Setting::query()->where('key', 'tentang_cerita')->first();
         $cerita = $ceritaDb ? $ceritaDb->value : 'Alia Cookies bermula dari kecintaan terhadap seni membuat kue...';
 
-        $milestonesDb = Setting::query()->where('key', 'tentang_milestones')->first();
+        $milestonesDb = \App\Models\Setting::query()->where('key', 'tentang_milestones')->first();
         $milestones = $milestonesDb ? json_decode($milestonesDb->value, true) : [];
 
-        $kontaksDb = Setting::query()->where('key', 'tentang_kontak')->first();
+        $kontaksDb = \App\Models\Setting::query()->where('key', 'tentang_kontak')->first();
         $kontaks = $kontaksDb ? json_decode($kontaksDb->value, true) : [];
 
-        $produkUnggulan = [
-            ['id' => 1, 'nama' => 'Choco Chip Cookies', 'harga' => 'Rp 45.000', 'ket' => 'Kue kering renyah dengan taburan cokelat melimpah.', 'gambar' => 'cookies1.jpg'],
-            ['id' => 2, 'nama' => 'Premium Nastar',     'harga' => 'Rp 60.000', 'ket' => 'Nastar lembut dengan isian selai nanas homemade yang manis segar.', 'gambar' => 'cookies2.jpg'],
-            ['id' => 3, 'nama' => 'Almond Cheese Crispy', 'harga' => 'Rp 55.000', 'ket' => 'Tipis, renyah, perpaduan gurihnya keju dan renyahnya kacang almond.', 'gambar' => 'cookies3.jpg'],
-        ];
+        $bestSellers = \App\Models\TransactionItem::selectRaw('id_produk, SUM(jumlah) as total_terjual')
+            ->groupBy('id_produk')
+            ->orderByDesc('total_terjual')
+            ->take(3)
+            ->get();
 
-        return view('tentang', compact('cerita', 'milestones', 'kontaks', 'produkUnggulan'));
+        $produkUnggulanData = collect();
+
+        foreach ($bestSellers as $bs) {
+            $prod = \App\Models\Product::find($bs->id_produk);
+            if ($prod) {
+                $produkUnggulanData->push($prod);
+            }
+        }
+
+        if ($produkUnggulanData->count() < 3) {
+            $kurang = 3 - $produkUnggulanData->count();
+            $excludeIds = $produkUnggulanData->pluck('id')->toArray();
+
+            $tambahan = \App\Models\Product::whereNotIn('id', $excludeIds)
+                ->latest()
+                ->take($kurang)
+                ->get();
+
+            foreach ($tambahan as $tmb) {
+                $produkUnggulanData->push($tmb);
+            }
+        }
+
+        return view('tentang', compact('cerita', 'milestones', 'kontaks', 'produkUnggulanData'));
     }
+
     public function editTentang()
     {
         // Ambil data saat ini dari database
