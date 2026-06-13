@@ -272,7 +272,7 @@
             </div>
         </div>
 
-        <p class="status" id="subStatus">Menyiapkan sistem admin...</p>
+        <p class="status" id="subStatus">Menyiapkan sistem...</p>
 
         <div class="dots">
             <div class="dot"></div>
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <p class="corner-text">© {{ date('Y') }} Alia Cookies — Admin Panel</p>
+    <p class="corner-text">© {{ date('Y') }} Alia Cookies</p>
 
     <script>
         const fill      = document.getElementById('progressFill');
@@ -292,7 +292,7 @@
         const steps = [
             { pct: 20,  label: 'Memuat aset...',         sub: 'Menyiapkan tampilan...' },
             { pct: 45,  label: 'Menginisialisasi...',     sub: 'Memeriksa konfigurasi sistem...' },
-            { pct: 70,  label: 'Hampir selesai...',       sub: 'Menyiapkan panel admin...' },
+            { pct: 70,  label: 'Hampir selesai...',       sub: 'Menyiapkan panel...' },
             { pct: 90,  label: 'Menyelesaikan...',        sub: 'Sebentar lagi masuk!' },
             { pct: 100, label: 'Selesai!',                sub: 'Selamat datang di Alia Cookies' },
         ];

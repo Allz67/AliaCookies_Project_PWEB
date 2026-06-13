@@ -111,6 +111,14 @@
                     <form action="{{ route('transaksi.updateResi', $transaksi->id) }}" method="POST">
                         @csrf
 
+                        {{-- [BARU] 0. TANGGAL TRANSAKSI --}}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #d4c5b0;">
+                            <span style="color: #8a7a63; font-size: 13px;">Tanggal Pemesanan</span>
+                            <span style="font-weight: 600; font-size: 13px; color: #444; background: #f5ede0; padding: 4px 8px; border-radius: 4px;">
+                                {{ $transaksi->created_at ? $transaksi->created_at->format('d M Y, H:i') : ($transaksi->tanggal_transaksi ?? '-') }} WIB
+                            </span>
+                        </div>
+
                         {{-- 1. BAGIAN STATUS --}}
                         <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px dashed #d4c5b0;">
                             {{-- STATUS PEMBAYARAN --}}
@@ -154,12 +162,16 @@
                                     {{ strtoupper($transaksi->courier ?? 'MENUNGGU KONFIRMASI') }}
                                 </span>
                             </div>
+
+                            {{-- LOGIKA BARU: Sembunyikan Resi jika Pickup --}}
+                            @if(strtolower($transaksi->courier) !== 'pickup')
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #8a7a63; font-size: 13px;">Nomor Resi</span>
                                 <span style="font-weight: 600; font-size: 14px; letter-spacing: 0.5px; color: #333;">
                                     {{ $transaksi->resi_number ?? '-' }}
                                 </span>
                             </div>
+                            @endif
                         </div>
 
                         {{-- ============================================================
@@ -181,22 +193,34 @@
                                         </div>
                                     </div>
 
-                                {{-- STATE 2: PROSES (Input Resi & Kirim) --}}
+                                {{-- STATE 2: PROSES (Input Resi & Kirim ATAU Selesai untuk Pickup) --}}
                                 @elseif(strtolower($transaksi->status_pesanan) === 'proses')
-                                    <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; border: 1px solid #bbf7d0;">
-                                        <div style="margin-bottom: 12px;">
-                                            <label style="font-size: 12px; color: #166534; display: block; margin-bottom: 4px; font-weight: bold;">Ubah Status</label>
-                                            <select name="status_pesanan" style="width: 100%; padding: 10px; border: 1px solid #86efac; border-radius: 6px; font-size: 13px; font-weight: bold; color: #15803d; outline: none;">
-                                                <option value="Dikirim" selected>DIKIRIM</option>
+                                    @if(strtolower($transaksi->courier) === 'pickup')
+                                        {{-- KHUSUS PICKUP: Tanpa Resi, Langsung Selesai --}}
+                                        <div style="background: #eff6ff; padding: 16px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                            <label style="font-size: 12px; color: #1e3a8a; display: block; margin-bottom: 4px; font-weight: bold;">Tandai Pesanan Diambil</label>
+                                            <select name="status_pesanan" style="width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 6px; font-size: 13px; font-weight: bold; color: #1d4ed8; outline: none;">
+                                                <option value="Selesai" selected>SELESAI (SUDAH DIAMBIL)</option>
                                             </select>
+                                            <p style="font-size: 11px; color: #3b82f6; margin-top: 8px;">*Pesanan Pickup tidak membutuhkan Nomor Resi. Anda dapat langsung menyelesaikan pesanan ini saat Kustomer mengambil kuenya.</p>
                                         </div>
-                                        <div>
-                                            <label style="font-size: 12px; color: #166534; display: block; margin-bottom: 4px; font-weight: bold;">Nomor Resi</label>
-                                            <input type="text" name="resi_number" style="width: 100%; padding: 10px; border: 1px solid #86efac; border-radius: 6px; font-size: 13px;" placeholder="Ketik nomor resi valid..." required>
+                                    @else
+                                        {{-- PENGIRIMAN BIASA: Butuh Resi --}}
+                                        <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; border: 1px solid #bbf7d0;">
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="font-size: 12px; color: #166534; display: block; margin-bottom: 4px; font-weight: bold;">Ubah Status</label>
+                                                <select name="status_pesanan" style="width: 100%; padding: 10px; border: 1px solid #86efac; border-radius: 6px; font-size: 13px; font-weight: bold; color: #15803d; outline: none;">
+                                                    <option value="Dikirim" selected>DIKIRIM</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style="font-size: 12px; color: #166534; display: block; margin-bottom: 4px; font-weight: bold;">Nomor Resi</label>
+                                                <input type="text" name="resi_number" style="width: 100%; padding: 10px; border: 1px solid #86efac; border-radius: 6px; font-size: 13px;" placeholder="Ketik nomor resi valid..." required>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
 
-                                {{-- STATE 3: DIKIRIM (Selesaikan Pesanan) --}}
+                                {{-- STATE 3: DIKIRIM (Selesaikan Pesanan Delivery) --}}
                                 @elseif(strtolower($transaksi->status_pesanan) === 'dikirim')
                                     <div style="background: #eff6ff; padding: 16px; border-radius: 8px; border: 1px solid #bfdbfe;">
                                         <label style="font-size: 12px; color: #1e3a8a; display: block; margin-bottom: 4px; font-weight: bold;">Tandai Pesanan</label>
@@ -212,7 +236,7 @@
                                         @if(strtolower($transaksi->status_pesanan) === 'pending')
                                             Konfirmasi Ongkir & Tagih Customer
                                         @elseif(strtolower($transaksi->status_pesanan) === 'proses')
-                                            Simpan Resi & Kirim Pesanan
+                                            {{ strtolower($transaksi->courier) === 'pickup' ? 'Tandai Telah Diambil Kustomer' : 'Simpan Resi & Kirim Pesanan' }}
                                         @else
                                             Tandai Sebagai Selesai
                                         @endif
@@ -226,7 +250,9 @@
                             {{-- STATE 1.5: UNPAID (Info khusus Admin saat nunggu dibayar) --}}
                             @if(strtolower($transaksi->status_pesanan) === 'unpaid')
                                 <div style="margin-top: 24px; text-align: center; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;">
-                                    <span style="font-size: 13px; color: #6b7280; font-weight: 500;">Ongkir sudah dikonfirmasi.<br>Sistem sedang menunggu Kustomer menyelesaikan pembayaran.</span>
+                                    <span style="font-size: 13px; color: #6b7280; font-weight: 500;">
+                                        {{ strtolower($transaksi->courier) === 'pickup' ? 'Sistem sedang menunggu Kustomer menyelesaikan pembayaran.' : 'Ongkir sudah dikonfirmasi. Sistem sedang menunggu Kustomer menyelesaikan pembayaran.' }}
+                                    </span>
                                 </div>
                             @endif
                         @endif
@@ -255,7 +281,7 @@
                                     </button>
                                 @endif
 
-                                {{-- Tombol Batalkan Pesanan (UI disamakan dengan btn-bayar) --}}
+                                {{-- Tombol Batalkan Pesanan --}}
                                 <form id="form-batal-pesanan" action="{{ route('transaksi.updateResi', $transaksi->id) }}" method="POST" onsubmit="return confirmCancel(event);">
                                     @csrf
                                     <input type="hidden" name="status_pesanan" value="Dibatalkan">
@@ -265,20 +291,22 @@
                                 </form>
                             @endif
 
-                            {{-- STATE 2: PROSES / DIKIRIM (Menunggu Paket Datang) --}}
+                            {{-- STATE 2: PROSES / DIKIRIM (Menunggu Paket Datang / Diambil) --}}
                             @if(in_array(strtolower($transaksi->status_pesanan), ['proses', 'dikirim']))
 
-                                @if(strtolower($transaksi->status_pesanan) === 'dikirim')
-                                    {{-- Tombol Menyala Hijau (Siap Diterima) --}}
+                                {{-- LOGIKA BARU: Jika Dikirim, ATAU jika Pickup sedang Diproses --}}
+                                @if(strtolower($transaksi->status_pesanan) === 'dikirim' || (strtolower($transaksi->status_pesanan) === 'proses' && strtolower($transaksi->courier) === 'pickup'))
+
                                     <form action="{{ route('transaksi.updateResi', $transaksi->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="status_pesanan" value="Selesai">
                                         <button type="submit" class="btn-bayar" style="width: 100%; background-color: #15803d; border-bottom: 4px solid #166534; margin-bottom: 0;">
-                                            Pesanan Diterima (Selesai)
+                                            {{ strtolower($transaksi->courier) === 'pickup' ? 'Saya Telah Mengambil Pesanan (Selesai)' : 'Pesanan Diterima (Selesai)' }}
                                         </button>
                                     </form>
+
                                 @else
-                                    {{-- Tombol Mati Abu-abu (Paket masih diproses admin) --}}
+                                    {{-- Tombol Mati Abu-abu (Paket Delivery masih diproses admin) --}}
                                     <button type="button" class="btn-bayar" style="width: 100%; background-color: #cccccc; color: #777777; border-bottom: 4px solid #aaaaaa; cursor: not-allowed; margin-bottom: 0;" disabled>
                                         Pesanan Diterima
                                     </button>

@@ -10,9 +10,13 @@
             if (match) return decodeURIComponent(match[2]);
             return null;
         }
-        const savedTheme = getCookie('theme') || 'system';
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (savedTheme === 'dark' || (savedTheme === 'system' && systemPrefersDark)) {
+
+        // 1. Ubah bawaan (default) dari 'system' menjadi 'light'
+        const savedTheme = getCookie('theme') || 'light';
+
+        // 2. Detektif OS (systemPrefersDark) kita hapus/abaikan.
+        // 3. Hanya gunakan mode gelap JIKA memori cookie benar-benar mencatat 'dark'
+        if (savedTheme === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
