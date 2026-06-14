@@ -134,7 +134,7 @@
             <div class="table-controls">
                 <div class="search-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="searchTrx" placeholder="Cari transaksi..." onkeyup="searchTable('trxTable', this.value)">
+                    <input type="text" id="searchTrx" placeholder="Cari transaksi..." onkeyup="doLiveSearch(this.value)">
                 </div>
                 <select id="filterStatus" onchange="filterTableByStatus('trxTable', 3, this.value)" class="filter-select">
                     <option value="">Semua Status</option>
@@ -190,7 +190,7 @@
 
     } catch (error) {
         console.error(error);
-        loading.innerText = "❌ Gagal memuat info cuaca";
+        loading.innerText = "Gagal memuat info cuaca";
     }
     }
 

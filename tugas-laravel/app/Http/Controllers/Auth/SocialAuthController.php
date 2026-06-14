@@ -25,7 +25,6 @@ class SocialAuthController extends Controller
      */
     public function handleGoogleCallback(): RedirectResponse
     {
-        // Hapus/komentari try-catch nya dulu untuk sementara waktu
 
         /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
         $driver = Socialite::driver('google');

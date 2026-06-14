@@ -14,12 +14,33 @@
         <div class="footer-section">
             <h4>Menu Navigasi</h4>
             <ul class="footer-links">
-                <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li><a href="{{ route('pengelolaan') }}">Pengelolaan</a></li>
-                <li><a href="{{ route('profile') }}">Profile</a></li>
-                <li><a href="{{ route('tentang') }}">Tentang Kami</a></li>
-                <li><a href="{{ route('kontak') }}">Kontak</a></li>
-                <li><a href="{{ route('logout') }}">Logout</a></li>
+                {{-- JIKA PENGUNJUNG BELUM LOGIN SAMA SEKALI --}}
+                @guest
+                    <li><a href="{{ route('home') }}">Katalog Produk</a></li>
+                    <li><a href="{{ route('tentang') }}">Tentang Kami</a></li>
+                    <li><a href="{{ route('kontak') }}">Kontak</a></li>
+                    <li><a href="{{ route('login') }}">Login / Daftar</a></li>
+                @endguest
+
+                {{-- JIKA PENGUNJUNG SUDAH LOGIN --}}
+                @auth
+                    {{-- Khusus Menu Admin --}}
+                    @if(auth()->user()->role === 'admin')
+                        <li><a href="{{ route('dashboard') }}">Dashboard Admin</a></li>
+                        <li><a href="{{ route('pengelolaan') }}">Kelola Produk</a></li>
+                    {{-- Khusus Menu Customer --}}
+                    @else
+                        <li><a href="{{ route('home') }}">Katalog Produk</a></li>
+                        <li><a href="{{ route('cart.index') }}">Keranjang Belanja</a></li>
+                    @endif
+
+                    {{-- Menu Umum yang bisa dilihat Admin & Customer yang sudah login --}}
+                    <li><a href="{{ route('transaksi.index') }}">Data Transaksi</a></li>
+                    <li><a href="{{ route('profile') }}">Profile Saya</a></li>
+                    <li><a href="{{ route('tentang') }}">Tentang Kami</a></li>
+                    <li><a href="{{ route('kontak') }}">Kontak</a></li>
+                    <li><a href="{{ route('logout') }}">Logout</a></li>
+                @endauth
             </ul>
         </div>
 
